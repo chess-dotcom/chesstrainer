@@ -8737,7 +8737,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     if (elo >= 2400) bk = 99;
     const c = BOT.cfg(elo), sf = usesSf(elo), lv = sfLevel(elo);
     const depth = sf ? lv + 1 : Math.round(c.depth), err = sf ? (lv <= 3 ? 2 : lv <= 8 ? 1 : 0) : c.blunder >= 0.2 ? 3 : c.blunder >= 0.08 ? 2 : c.blunder >= 0.02 ? 1 : 0;
-    return { book: Math.round(bk), depth, err, sf, lv, time: elo >= 2000 ? 1500 : 900 };
+    return { book: Math.round(bk), depth, err, sf, lv, time: 3000 };
   }
   function botOf(elo) { let b = BOTS[0]; for (const x of BOTS) if (elo >= x[0]) b = x; return b; }
   const nextBot = (elo) => BOTS.find((x) => x[0] > elo) || null;
@@ -11873,30 +11873,42 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   // test razine: jedna partija protiv bota, Elo po točnosti tvojih poteza
   // =========================================================
   const PL_ELO = 1000;
-  const ACC2ELO = [[35, 400], [50, 650], [60, 850], [67, 1000], [73, 1200], [79, 1450], [84, 1700], [88, 1950], [92, 2200], [96, 2500]];
+  // umjereno partijama botova poznate jačine (po 8 testnih partija za 400–2000):
+  // prosječni gubitak u centipješacima u izjednačenim pozicijama i točnost u njima
+  const CPL2ELO = [[95, 300], [79, 400], [64, 700], [44, 1000], [33, 1300], [16, 1600], [7, 2000], [3, 2400]];
+  const ACCB2ELO = [[72, 300], [79.4, 400], [83.1, 700], [86.6, 1000], [89, 1300], [95.8, 1600], [97.5, 2000], [99, 2400]];
+  const tblX = (T, x, desc) => { const f = (i) => T[i][0]; if (desc ? x >= f(0) : x <= f(0)) return T[0][1]; for (let i = 0; i < T.length - 1; i++) { const a = T[i], b = T[i + 1]; if (desc ? x >= b[0] : x <= b[0]) return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } return T[T.length - 1][1]; };
   function plJudge(before, mv, san) {
     if (!G || !G.placement) return;
+    const ply = G.sans.length - 1, bk = allBook().nx[G.sans.slice(0, ply).join(' ')];
+    if (ply < 2 || (bk && bk[san] && ply < 16)) return; // teorija ne govori ništa o jačini
     const lm = legalMoves(before), r = SRCH.search(before, { depth: 30, time: 220, minDepth: 4, maxTime: 1000 });
     const best = r.move ? sanOf(before, r.move, lm) : null, isBest = !!best && strip(best) === strip(san);
     const sc = isBest ? r.score : SRCH.evalMove(before, mv, r.depth, 1500).score;
     const loss = isBest ? 0 : Math.max(0, winP(eCp(r.score)) - winP(eCp(sc)));
-    G.pl = G.pl || []; G.pl.push(loss);
+    G.pl = G.pl || []; G.pl.push([loss, eCp(r.score), eCp(sc)]);
   }
   function plEstimate(k) {
-    const L = (G.pl || []).slice(2); // prva dva poteza su skoro uvijek teorija
-    if (!L.length) return null;
-    const acc = L.reduce((a, x) => a + accOf(x), 0) / L.length, big = L.filter((x) => x >= 20).length;
-    let e = ACC2ELO[0][1];
-    for (let i = 0; i < ACC2ELO.length - 1; i++) if (acc >= ACC2ELO[i][0]) { const a = ACC2ELO[i], b = ACC2ELO[i + 1]; e = acc >= b[0] ? b[1] : a[1] + (b[1] - a[1]) * (acc - a[0]) / (b[0] - a[0]); }
-    e += k === 'w' ? 120 : k === 'l' ? -80 : 30;
-    e -= Math.max(0, big - 2) * 40;
-    e = Math.round(Math.max(400, Math.min(2500, e)) / 10) * 10;
-    return { elo: e, acc, n: L.length, big };
+    const all = G.pl || [];
+    if (all.length < 3) return null;
+    let bal = all.filter((x) => Math.abs(x[1]) < 400);
+    const rough = bal.length < 8;
+    if (bal.length < 4) bal = all;
+    const cpl = bal.reduce((a, x) => a + Math.min(500, Math.max(0, x[1] - x[2])), 0) / bal.length;
+    const acc = bal.reduce((a, x) => a + accOf(x[0]), 0) / bal.length;
+    let e = (tblX(CPL2ELO, cpl, true) * 2 + tblX(ACCB2ELO, acc, false)) / 3;
+    e += k === 'w' ? 60 : k === 'l' ? -60 : 0;
+    e = Math.round(Math.max(300, Math.min(2500, e)) / 10) * 10;
+    return { elo: e, acc, cpl, n: all.length, big: all.filter((x) => x[0] >= 20).length, rough };
   }
   function plFinish(k) {
     const r = plEstimate(k);
     G.plRes = r;
     if (!r) return;
+    // prosjek zadnje tri testne partije: jedna partija može odstupati i 250 Elo
+    save.testH = (save.testH || []).concat(r.elo).slice(-3);
+    r.one = r.elo; r.cnt = save.testH.length;
+    r.elo = Math.round(save.testH.reduce((a, x) => a + x, 0) / save.testH.length / 10) * 10;
     save.test = { elo: r.elo, t: Date.now(), acc: Math.round(r.acc * 10) / 10, game: 1 };
     if (!save.pr || save.pr.n < 15) save.pr = { r: r.elo, n: save.pr ? save.pr.n : 0, w: save.pr ? save.pr.w : 0, h: [r.elo], best: r.elo };
     const bot = BOTS.slice().reverse().find((x) => x[0] <= Math.max(400, r.elo - 100)) || BOTS[0];
@@ -11911,8 +11923,8 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     const est = r.elo, word = est < 800 ? 'Početnik' : est < 1100 ? 'Napredni početnik' : est < 1400 ? 'Klupski igrač' : est < 1800 ? 'Jak klupski igrač' : 'Majstorski kandidat';
     const bot = botOf(playCfg().elo), lvl = RATED_LESSONS.mg.slice().reverse().find((l) => l.elo <= est) || RATED_LESSONS.mg[0];
     return '<div class="coach slim gm"><div class="c-body why"><span class="kicker">Rezultat testa · ' + esc(s.text.replace(/<[^>]+>/g, '')) + '</span><div class="c-txt">' +
-      '<div class="ts-big"><small>Tvoja razina: ' + word + '</small><b>~' + est + '</b><span>Elo · točnost ' + r.acc.toFixed(1) + ' % u ' + r.n + ' poteza' + (r.big ? ', grubih grešaka: ' + r.big : '') + '</span></div>' +
-      (r.n < 12 ? '<p class="muted small">Partija je bila kratka, pa je procjena gruba. Za točniju procjenu odigraj dulju partiju.</p>' : '') +
+      '<div class="ts-big"><small>Tvoja razina: ' + word + '</small><b>~' + est + '</b><span>Elo · točnost ' + r.acc.toFixed(1) + ' % · prosječno ' + Math.round(r.cpl) + ' cp gubitka po potezu' + (r.big ? ', grubih grešaka: ' + r.big : '') + '</span></div>' +
+      (r.cnt > 1 ? '<p class="small">Ova partija: ~' + r.one + ' Elo. Prikazan je prosjek zadnjih ' + r.cnt + ' testnih partija.</p>' : '') + (r.rough ? '<p class="muted small">Procjena je gruba: bilo je malo poteza u izjednačenoj poziciji. Za točniju procjenu odigraj dulju partiju i ne predaj rano.</p>' : '<p class="muted small">Jedna partija može odstupati i 250 Elo. Odigraj test 2–3 puta: uzimam prosjek pa je procjena puno točnija.</p>') +
       '<div class="ts-recs"><a href="#igraj"><b>Tvoj bot: ' + esc(bot[1]) + '</b><small>' + bot[0] + ' Elo, postavio sam ga za tebe</small></a><a href="#z-' + lvl.id + '"><b>Zadaci oko ' + lvl.elo + ' Elo</b><small>Tvoja razina zadataka</small></a></div>' +
       '</div></div><div class="c-act"><a class="btn pri" href="#igraj">Igraj ▶</a>' + anB + '<a class="btn" href="#z-test">Ponovi test</a></div></div>';
   }
