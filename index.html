@@ -2112,8 +2112,15 @@ body.in-play #v-quiz { gap: 14px; }
 .cb-own { font-weight: 700; color: #0d7a68; }
 .cm-op { display: inline-block; margin-top: 2px; font-weight: 700; color: var(--accent); }
 .cb-sum { font-size: 14px; }
-.coach.cmode { display: flex; flex-direction: column; gap: 10px; }
+.cbw .cb { margin-top: 6px; }
+.cbw .cb-av { width: 48px; height: 48px; }
+.cbw .cb-bub { border-width: 1.5px; }
 @media (prefers-reduced-motion: reduce) { .cb-bub { animation: none; } }
+.cbw { padding: 10px 12px; }
+.cbw .cb { margin-top: 0; gap: 10px; }
+.cbw .cb-bub { padding: 8px 12px 9px; animation: none; }
+.cbw .cb-bub p { font-size: 14px; line-height: 1.45; margin: 0 0 2px; }
+@media (max-width: 700px) { .cbw .cb-av { width: 38px; height: 38px; } .cbw .cb-n { display: none; } .cbw .cb-bub p { font-size: 13.5px; } .cbw .res-big { margin: 0 0 4px; } }
 
 </style>
 
@@ -8963,10 +8970,11 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     let kick, body, act, cls = 'plan';
     if (G.placement) return plPanelHtml();
     if (G.coach) {
-      const anB = G.histId ? '<a class="btn pri" href="#analiza/' + G.histId + '">Analiza</a>' : '';
-      act = G.done ? '<button class="btn' + (anB ? '' : ' pri') + ' pulse" data-g="again">Nova partija</button>' + anB + '<a class="btn" href="#igraj">Postavke</a>'
+      const anB = G.histId ? '<a class="btn" href="#analiza/' + G.histId + '">Analiza</a>' : '';
+      act = G.done ? '<button class="btn pri pulse" data-g="again">Revanš</button>' + anB + '<a class="btn" href="#igraj">Botovi</a>'
         : '<button class="btn" data-g="hint"' + (G.waiting ? '' : ' disabled') + '>Savjet</button><button class="btn" data-g="undo"' + (G.waiting && G.stack.length ? '' : ' disabled') + '>Vrati</button><button class="btn" data-g="resign">Predaj</button>';
-      return '<div class="coach slim gm cmode">' + (G.done ? '<div class="c-body why"><span class="kicker">Kraj partije</span><div class="c-txt"><p class="res-big">' + esc(s.text.replace(/<[^>]+>/g, '')) + '</p>' + coachSummary() + '</div></div>' : '') + coachPanelHtml() + '<div class="c-act">' + act + '</div></div>';
+      const res = G.done ? '<p class="res-big">' + esc(s.text.replace(/<[^>]+>/g, '')) + '</p>' + coachSummary() : '';
+      return '<div class="coach slim gm"><div class="c-body ' + (G.done ? 'why' : 'plan') + ' cbw">' + (G.done ? '<span class="kicker">Kraj partije</span>' : '') + '<div class="c-txt">' + res + coachPanelHtml() + '</div></div><div class="c-act">' + act + '</div></div>';
     }
     if (G.done) {
       kick = 'Kraj partije'; cls = s.kind === 'good' ? 'why' : 'plan'; const g = save.games || { w: 0, d: 0, l: 0 };
