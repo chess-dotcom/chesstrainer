@@ -9,12 +9,17 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Šah trener">
 <meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%}button,a,.sq,.mn{touch-action:manipulation}</style>
 <title>Šahovski trener</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
+/* stranica sama ima svijetlu i tamnu temu: preglednik (npr. Chrome/Samsung na Androidu) je ne smije sam "zatamniti" */
+:root { color-scheme: light dark; }
+html[data-theme="light"], :root[data-theme="light"] { color-scheme: light; }
 /* Raspored: gornja traka, zatim jedan stupac sadržaja (max 1120px). Ploča lijevo, ploča trenera desno (na mobitelu ispod ploče). */
 :root {
   --bg: #eef0f4;
