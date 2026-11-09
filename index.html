@@ -2121,6 +2121,12 @@ body.in-play #v-quiz { gap: 14px; }
 .cbw .cb-bub { padding: 8px 12px 9px; animation: none; }
 .cbw .cb-bub p { font-size: 14px; line-height: 1.45; margin: 0 0 2px; }
 @media (max-width: 700px) { .cbw .cb-av { width: 38px; height: 38px; } .cbw .cb-n { display: none; } .cbw .cb-bub p { font-size: 13.5px; } .cbw .res-big { margin: 0 0 4px; } }
+/* izbor strane kod trenera: uvijek stane u širinu (na mobitelu 2 x 2) */
+.coach-card ~ .cc-row:has(.seg2), .cc-row:has(.seg2) { flex-wrap: wrap; align-items: stretch; }
+.cc-row .seg2 { flex: 1 1 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; min-width: 0; }
+.cc-row .seg2 button { padding: 9px 4px; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-row .cc-l { width: 100%; }
+@media (max-width: 520px) { .cc-row .seg2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cc-row .seg2 button { padding: 10px 6px; font-size: 14.5px; } }
 
 </style>
 
@@ -11867,7 +11873,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     return '<div class="bot-card coach-card' + '"><span class="bot-av">' + COACH_ART.svg(true) + '</span><div><b>' + esc(COACH[1]) + '</b><span class="bot-elo"><em id="plElo">' + e + '</em> Elo · ' + coachLvl(e) + '</span></div></div>' +
       '<p class="pl-desc">' + esc(COACH[3]) + '</p>' +
       '<div class="cc-row"><label for="ccElo">Jačina</label><input type="range" id="ccElo" min="400" max="2400" step="100" value="' + e + '"><output id="ccEloO">' + e + '</output></div>' +
-      '<div class="cc-row"><span class="cc-l">Igraš</span><div class="seg2" role="group" aria-label="Boja figura">' + [['op', 'Moje otvaranje'], ['w', 'Bijelima'], ['b', 'Crnima'], ['r', 'Nasumično']].map((x) => '<button data-csd="' + x[0] + '" aria-pressed="' + (sd === x[0]) + '">' + x[1] + '</button>').join('') + '</div></div>' +
+      '<div class="cc-row"><span class="cc-l">Igraš</span><div class="seg2" role="group" aria-label="Boja figura">' + [['op', 'Otvaranje'], ['w', 'Bijelima'], ['b', 'Crnima'], ['r', 'Nasumično']].map((x) => '<button data-csd="' + x[0] + '" aria-pressed="' + (sd === x[0]) + '">' + x[1] + '</button>').join('') + '</div></div>' +
       (sd === 'op' ? '<p class="pl-op">Igraš svoje otvaranje: <b>' + esc(op.name) + '</b> (' + (sideOf(op) === 'w' ? 'bijeli' : 'crni') + ') <a href="#plOps" data-jump>promijeni</a></p>' : '') +
       tcPicker(c) + '<a class="btn big gold pl-go" href="#partija">Igraj s trenerom ▶</a>' + histStrip();
   }
