@@ -6725,7 +6725,8 @@ var BOT = (function () {
   // izmjereno (studeni 2026): lanac mečeva 400→1500 (po 30–40 partija za svaki korak od 100) i provjera,
   // zajedno procijenjeno metodom najveće vjerodostojnosti;
   // iznad 1500 igra Stockfish, a ovo je samo rezerva ako se Stockfish ne učita
-  let CAL = [[400, 400], [700, 633], [1000, 892], [1300, 1165], [1500, 1335], [1600, 1440], [2000, 2000], [2400, 2400]];
+  // pomak +300: usporedba sa zadacima pokazala je da su botovi igrali slabije od svoje oznake
+  let CAL = [[400, 633], [700, 892], [1000, 1165], [1300, 1440], [1500, 1720], [1600, 1860], [2000, 2200], [2400, 2400]];
   const interp = (T, x) => { if (x <= T[0][0]) return T[0][1]; for (let i = 0; i < T.length - 1; i++) if (x <= T[i + 1][0]) return T[i][1] + (T[i + 1][1] - T[i][1]) * (x - T[i][0]) / (T[i + 1][0] - T[i][0]); return T[T.length - 1][1]; };
   function cfg(label) {
     const elo = CAL ? interp(CAL, label) : label;
@@ -8728,7 +8729,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   const tierOf = (elo) => Math.max(0, TIERS.findIndex((t) => elo >= t[1] && elo <= t[2]));
   // jačina bota: do 1500 naš "ljudski" bot (bot.js), od 1600 Stockfish s razinom po njegovoj službenoj formuli za Elo
   const BOOK_N = [[400, 2], [800, 3], [1200, 5], [1600, 7], [2000, 10], [2400, 99]];
-  const sfLevel = (elo) => Math.max(0, Math.min(20, Math.round(Math.pow(Math.max(0, (elo - 1346.6) / 143.4), 1 / 0.806))));
+  const sfLevel = (elo) => Math.max(0, Math.min(20, Math.round(Math.pow(Math.max(0, (elo + 200 - 1346.6) / 143.4), 1 / 0.806))));
   const usesSf = (elo) => elo >= 1600 && !SF.failed;
   function botCfg(elo) {
     let bk = 2;
@@ -8783,11 +8784,11 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   function startGame(l, mode) {
     tok++;
     const c = playCfg(), op = mode === 'open' ? OPS[c.op] : l.op, coach = mode === 'open' && !!c.coach;
-    const side = coach ? (c.coachSide === 'b' ? 'b' : c.coachSide === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : 'w') : sideOf(op);
+    const cs = c.coachSide || 'op', side = coach && cs !== 'op' ? (cs === 'b' ? 'b' : cs === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : 'w') : sideOf(op);
     const pos = mode === 'open' ? parseFen(START_FEN) : l.pos[l.n];
     G = { kind: 'game', mode: mode || 'line', op, line: l, pos, side, played: [], sans: mode === 'open' ? [] : l.sans.slice(0, l.n).map((x) => x), start: mode === 'open' ? 0 : l.n,
       done: false, waiting: false, status: null, result: null, hintMove: null, tk: tok, keys: [posKey(pos)], half: 0, inBook: mode === 'open', botBook: 0, exit: null, stack: [], helped: false, earned: 0, newStars: 0, clk: clockNew(c.tc), elo: coach ? (c.coachElo || 1000) : c.elo, coach, cm: null, cTally: {} };
-    if (coach) G.inBook = false;
+    if (coach) { G.inBook = (c.coachSide || 'op') === 'op'; G.cFree = !G.inBook; }
     if (G.elo >= 1600) sfInit();
     Board.mount($('#gmBoard'));
     Board.set({ pos: G.pos, flipped: side === 'b', last: mode === 'open' ? null : l.mv[l.n - 1] || null, sel: null, targets: [], marks: {}, good: -1, bad: -1, arrows: [], live: false, onMove: onGameMove });
@@ -9996,7 +9997,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
       if (tk !== JOB.tk) return;
       if (!jobAllowed(h) || save.hist.indexOf(h) < 0) { JOB.live = false; return; }
       if (!h.an.eng) {
-        AN.phase = 'Pokrećem Stockfish…'; anRefreshFg(false);
+        AN.phase = 'Analiziram partiju (' + Math.ceil((N - 1) / 2) + ' poteza)…'; anRefreshFg(false);
         const ok = await sfReady(9000);
         if (tk !== JOB.tk) return;
         if (!h.an.eng) h.an.eng = ok ? 'sf' : 'basic';
@@ -10015,7 +10016,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
         }
         h.an.dp[j] = r.d || 0;
         h.an.e.push(r.e); h.an.b.push(r.b);
-        AN.phase = 'Analiziram potez ' + Math.min(j + 1, N - 1) + ' od ' + (N - 1);
+        AN.phase = 'Analiziram potez ' + Math.ceil(Math.min(j + 1, N - 1) / 2) + ' od ' + Math.ceil((N - 1) / 2);
         anRefreshFg(false);
         setTimeout(tickA, 0);
         return;
@@ -11689,7 +11690,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   // =========================================================
   // Trener: igraš protiv trenera (biraš jačinu, stranu i sat), a on komentira svaki tvoj potez
   // =========================================================
-  const COACH = ['coach', 'Trener Mihael', 'coach', 'Tvoj trener. Igra jačinom koju odabereš i nakon svakog tvog poteza kaže što misli: je li potez dobar, koje je otvaranje i što je bolje.'];
+  const COACH = ['coach', 'Trener', 'coach', 'Tvoj trener. Igra jačinom koju odabereš i nakon svakog tvog poteza kaže što misli: je li potez dobar, koje je otvaranje i što je bolje.'];
   (function () { const old = BOT_ART.svg; BOT_ART.svg = (e, bg) => (e === 'coach' ? COACH_ART.svg(bg) : old(e, bg)); })();
   const oppH = (h) => (h && h.coach ? COACH : botOf(h.elo));
   const gameElo = () => (G && G.kind === 'game' && G.elo) || playCfg().elo;
@@ -11726,7 +11727,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   }
   // trenerov izbor iz knjige otvaranja (raznolikost), samo na početku
   function coachBook() {
-    if (!G.coach || G.sans.length >= Math.min(12, 2 + Math.round(G.elo / 200))) return null;
+    if (!G.coach || !G.cFree || G.sans.length >= Math.min(12, 2 + Math.round(G.elo / 200))) return null;
     const c = allBook().nx[G.sans.join(' ')];
     if (!c) return null;
     const ks = Object.keys(c), tot = ks.reduce((a, k) => a + c[k], 0);
@@ -11735,6 +11736,29 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     return null;
   }
   const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
+  // što potez radi, riječima (za komentar)
+  function moveIdea(pos, mv, san) {
+    try {
+      const t = mv.piece.toLowerCase(), us = pos.turn, after = apply(pos, mv), cap = pos.b[mv.to], back = us === 'w' ? 7 : 0;
+      if (/#$/.test(san)) return 'mat';
+      if (mv.flag === 'K' || mv.flag === 'Q') return 'rokada: kralj je na sigurnom, a top ulazi u igru';
+      if (mv.promo) return 'pješak postaje dama';
+      if (cap && 'nbrq'.indexOf(cap.toLowerCase()) >= 0) return 'uzima ' + PN_A[cap.toLowerCase()] + ' na ' + sqName(mv.to);
+      const ch = /\+$/.test(san);
+      // napad na veću ili nebranjenu figuru
+      const s2 = Object.assign({}, after, { turn: us }), en = us === 'w' ? 'b' : 'w';
+      const hits = pseudo(s2).filter((m) => m.from === mv.to && after.b[m.to] && 'nbrq'.indexOf(after.b[m.to].toLowerCase()) >= 0).map((m) => after.b[m.to].toLowerCase());
+      const big = hits.filter((v) => PV[v] > PV[t] || !isAttacked(after, mv.to, en)).sort((a, b) => PV[b] - PV[a]);
+      if (hits.length >= 2 && t !== 'k') return (ch ? 'šah i ' : '') + 'napada dvije figure odjednom';
+      if (ch) return 'daje šah';
+      if (big.length && !isAttacked(after, mv.to, en)) return 'napada ' + PN_A[big[0]];
+      if (cap) return 'uzima pješaka';
+      if ((t === 'n' || t === 'b') && (mv.from >> 3) === back && G.sans.length < 24) return 'razvija ' + (t === 'n' ? 'konja' : 'lovca');
+      if (t === 'p' && ((mv.to & 7) === 3 || (mv.to & 7) === 4) && G.sans.length < 16) return 'zauzima centar';
+      if (t === 'r' && !pos.b.some((p, i) => p && p.toLowerCase() === 'p' && (i & 7) === (mv.to & 7))) return 'top ide na otvorenu liniju';
+      return '';
+    } catch (e) { return ''; }
+  }
   // ocjena tvog poteza i komentar
   function coachJudge(before, mv, san, ply) {
     if (!G || !G.coach) return;
@@ -11758,15 +11782,20 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
       cls = isBest || loss < 0.6 ? 'best' : loss < 2.5 ? 'exc' : loss < 5 ? 'good' : loss < 10 ? 'inac' : loss < 20 ? 'mist' : 'blun';
       const mt = mateFix(cls, isBest, r.score, ev.score, wb);
       cls = mt.c;
-      const B2 = '<b class="mono">' + esc(best || '') + '</b>';
+      const B2 = '<b class="mono">' + esc(best || '') + '</b>', bIdea = best && !isBest ? moveIdea(before, parseSan(before, best), best) : '', mIdea = moveIdea(before, mv, san);
+      const bWhy = bIdea && bIdea !== 'mat' ? ' (' + bIdea + ')' : '';
+      const myIdea = mIdea && mIdea !== 'mat' ? ' Tvoj potez ' + mIdea + '.' : '';
       const why = whyTxt(before, mv, after, best, replySan, true, '').map((x) => x.replace(' (crvena strelica)', ''));
       if (mt.mm) txt = 'Ajme, imao si <b>mat u ' + mt.mm + '</b>: ' + B2 + '!';
-      else if (cls === 'best') txt = /#$/.test(san) ? 'Mat! Svaka čast.' : pickOne(['Odličan potez!', 'Bravo, i ja bih to odigrao.', 'Točno tako!', 'Super potez.', 'Najbolji potez, samo nastavi.']);
-      else if (cls === 'exc') txt = pickOne(['Vrlo dobro.', 'Dobar potez, samo naprijed.', 'Lijepo.']);
-      else if (cls === 'good') txt = pickOne(['Dobar potez.', 'U redu potez.', 'Može.']) + (best ? ' Malo bolje je ' + B2 + '.' : '');
-      else if (cls === 'inac') txt = 'Hmm, ima i bolje. ' + (why[0] ? why[0] + ' ' : '') + 'Ja bih igrao ' + B2 + '.';
-      else if (cls === 'mist') txt = 'Ajme, to je greška. ' + (why[0] ? why[0] + ' ' : '') + 'Bolje je bilo ' + B2 + '.';
-      else txt = 'Joj, gruba greška! ' + (why[0] ? why[0] + ' ' : mt.ma ? 'Sad ti mogu dati mat u ' + mt.ma + '. ' : '') + 'Trebalo je ' + B2 + '.';
+      else if (cls === 'best') txt = /#$/.test(san) ? 'Mat! Svaka čast.' : pickOne(['Odličan potez!', 'Bravo, i ja bih to odigrao.', 'Točno tako!', 'Super potez.', 'Najbolji potez, samo nastavi.']) + myIdea;
+      else if (cls === 'exc') txt = pickOne(['Vrlo dobro.', 'Dobar potez, samo naprijed.', 'Lijepo.']) + myIdea;
+      else if (cls === 'good') txt = pickOne(['Dobar potez.', 'U redu potez.', 'Može.']) + myIdea + (best ? ' Malo bolje je ' + B2 + bWhy + '.' : '');
+      else if (cls === 'inac') txt = 'Hmm, ima i bolje. ' + (why[0] ? why[0] + ' ' : '') + 'Ja bih igrao ' + B2 + bWhy + '.';
+      else if (cls === 'mist') txt = 'Ajme, to je greška. ' + (why[0] ? why[0] + ' ' : '') + 'Bolje je bilo ' + B2 + bWhy + '.';
+      else txt = 'Joj, gruba greška! ' + (why[0] ? why[0] + ' ' : mt.ma ? 'Sad ti mogu dati mat u ' + mt.ma + '. ' : '') + 'Trebalo je ' + B2 + bWhy + '.';
+      // ocjena pozicije nakon poteza, kao kod pravog trenera
+      const evU = ev.score;
+      if (cls !== 'blun' && cls !== 'mist' && Math.abs(evU) >= 150 && Math.abs(evU) < 5000) txt += evU > 0 ? ' Sad si u prednosti.' : ' Pazi, ja sam sad bolji.';
       if (mt.ma && cls !== 'blun') txt += ' Pazi, sad ti mogu dati mat!';
     }
     if (newOp) txt += ' <span class="cm-op">Otvaranje: ' + esc(newOp) + '</span>';
@@ -11781,6 +11810,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     if (G.cm.cls === 'blun' || G.cm.cls === 'mist') { if (cap && 'nbrqNBRQ'.indexOf(cap) >= 0) G.cm.own = pickOne(['Hvala na figuri!', 'Ovo ću uzeti, hvala.', 'Njam, figura!']); }
     else if (/#$/.test(san)) G.cm.own = 'Mat! Dobra partija, idemo opet?';
     else if (/\+$/.test(san) && Math.random() < 0.5) G.cm.own = 'Šah!';
+    else if (Math.random() < 0.45) { const id = moveIdea(before, mv, san); if (id) G.cm.own = 'Ja igram ' + plyLabel(G.sans.length - 1, san) + ': ' + id + '.'; }
   }
   function coachPanelHtml() {
     const cm = G.cm, av = '<span class="cb-av">' + COACH_ART.svg(true) + '</span>';
@@ -11800,11 +11830,12 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     return '<button class="coach-pick' + (c.coach ? ' on' : '') + '" data-coach="1" aria-pressed="' + !!c.coach + '"><span class="cp-av">' + COACH_ART.svg(true) + '</span><span class="cp-t"><small>Novo</small><b>' + esc(COACH[1]) + '</b><span>Igraj protiv mene. Ja komentiram svaki tvoj potez.</span></span></button>';
   }
   function coachCardHtml(c) {
-    const e = c.coachElo || 1000, sd = c.coachSide || 'w';
+    const e = c.coachElo || 1000, sd = c.coachSide || 'op', op = OPS[c.op];
     return '<div class="bot-card coach-card' + '"><span class="bot-av">' + COACH_ART.svg(true) + '</span><div><b>' + esc(COACH[1]) + '</b><span class="bot-elo"><em id="plElo">' + e + '</em> Elo · ' + coachLvl(e) + '</span></div></div>' +
       '<p class="pl-desc">' + esc(COACH[3]) + '</p>' +
       '<div class="cc-row"><label for="ccElo">Jačina</label><input type="range" id="ccElo" min="400" max="2400" step="100" value="' + e + '"><output id="ccEloO">' + e + '</output></div>' +
-      '<div class="cc-row"><span class="cc-l">Igraš</span><div class="seg2" role="group" aria-label="Boja figura">' + [['w', 'Bijelima'], ['b', 'Crnima'], ['r', 'Nasumično']].map((x) => '<button data-csd="' + x[0] + '" aria-pressed="' + (sd === x[0]) + '">' + x[1] + '</button>').join('') + '</div></div>' +
+      '<div class="cc-row"><span class="cc-l">Igraš</span><div class="seg2" role="group" aria-label="Boja figura">' + [['op', 'Moje otvaranje'], ['w', 'Bijelima'], ['b', 'Crnima'], ['r', 'Nasumično']].map((x) => '<button data-csd="' + x[0] + '" aria-pressed="' + (sd === x[0]) + '">' + x[1] + '</button>').join('') + '</div></div>' +
+      (sd === 'op' ? '<p class="pl-op">Igraš svoje otvaranje: <b>' + esc(op.name) + '</b> (' + (sideOf(op) === 'w' ? 'bijeli' : 'crni') + ') <a href="#plOps" data-jump>promijeni</a></p>' : '') +
       tcPicker(c) + '<a class="btn big gold pl-go" href="#partija">Igraj s trenerom ▶</a>' + histStrip();
   }
   function bindCoachCard(c) {
