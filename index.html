@@ -2080,6 +2080,40 @@ body.in-play #v-quiz { gap: 14px; }
 @media (max-width: 960px) { .an-top { padding-left: 36px; min-height: 34px; } .an-opp .ps-av { width: 28px; height: 28px; } }
 @media (prefers-reduced-motion: reduce) { .an-vpill { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .an-cm.in > *, .an-var { animation: none; } .an-ev i, .an-tabi { transition: none; } }
+/* ---------- trener ---------- */
+.coach-pick { display: flex; align-items: center; gap: 14px; width: 100%; margin: 4px 0 14px; padding: 12px 16px 12px 12px; border-radius: 20px; border: 2px solid color-mix(in srgb, #14a38b 45%, var(--line)); background: linear-gradient(120deg, color-mix(in srgb, #14a38b 14%, var(--surface)), var(--surface) 70%); color: var(--ink); text-align: left; cursor: pointer; transition: transform .15s, box-shadow .2s, border-color .2s; }
+.coach-pick:hover { transform: translateY(-1px); box-shadow: 0 12px 28px -18px rgba(13, 122, 104, .8); }
+.coach-pick.on { border-color: #14a38b; box-shadow: 0 0 0 3px color-mix(in srgb, #14a38b 30%, transparent); }
+.cp-av { flex: none; width: 72px; height: 72px; }
+.cp-av svg, .cb-av svg { width: 100%; height: 100%; display: block; }
+.cp-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cp-t small { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #0d7a68; }
+.cp-t b { font-size: 18px; }
+.cp-t span { font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
+.cc-row { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+.cc-row label, .cc-l { flex: none; width: 58px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.cc-row input[type=range] { flex: 1; min-width: 0; accent-color: #14a38b; height: 28px; }
+.cc-row output { flex: none; min-width: 48px; text-align: right; font: 700 15px var(--font-mono); }
+.coach-card .bot-av { background: none; }
+.ps-av.coach { background: none; overflow: hidden; }
+.ps-cel { font: 600 11.5px var(--font-mono); font-style: normal; color: var(--ink-2); margin-left: 4px; }
+.cb { display: flex; align-items: flex-start; gap: 12px; }
+.cb-av { flex: none; width: 58px; height: 58px; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .18)); }
+.cb-bub { position: relative; flex: 1; min-width: 0; padding: 10px 14px 12px; border-radius: 4px 18px 18px 18px; background: var(--surface); border: 2px solid var(--line); animation: anIn .3s cubic-bezier(.2, .8, .2, 1) both; }
+.cb.c-best .cb-bub, .cb.c-exc .cb-bub, .cb.c-book .cb-bub, .cb.c-bril .cb-bub { border-color: color-mix(in srgb, #5c9a3c 55%, var(--line)); }
+.cb.c-good .cb-bub { border-color: color-mix(in srgb, #8fae80 60%, var(--line)); }
+.cb.c-inac .cb-bub { border-color: color-mix(in srgb, #e7b228 65%, var(--line)); }
+.cb.c-mist .cb-bub, .cb.c-miss .cb-bub { border-color: color-mix(in srgb, #e5862a 65%, var(--line)); }
+.cb.c-blun .cb-bub { border-color: color-mix(in srgb, #cc3a33 65%, var(--line)); background: color-mix(in srgb, #cc3a33 5%, var(--surface)); }
+.cb-n { display: block; font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #0d7a68; margin-bottom: 4px; }
+.cb-bub p { margin: 0 0 4px; font-size: 14.5px; line-height: 1.5; }
+.cb-h { display: flex; align-items: center; gap: 7px; }
+.cb-h span { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+.cb-own { font-weight: 700; color: #0d7a68; }
+.cm-op { display: inline-block; margin-top: 2px; font-weight: 700; color: var(--accent); }
+.cb-sum { font-size: 14px; }
+.coach.cmode { display: flex; flex-direction: column; gap: 10px; }
+@media (prefers-reduced-motion: reduce) { .cb-bub { animation: none; } }
 
 </style>
 
@@ -6752,6 +6786,58 @@ var BOT = (function () {
 })();
 
 
+// Lik trenera: crtani lik (ne fotografija), u stilu ostalih likova botova
+var COACH_ART = (function () {
+  var INK = '#2b1a10', SKIN = '#f1c7a8', SKIN2 = '#e2ad8c', HAIR = '#9a6a3c', HAIR2 = '#7a5130', HAIR3 = '#c48f58', BROW = '#4a2e1b', BEARD = '#8a6440', EYE = '#86a9c9';
+  var n = 0;
+  function svg(bg) {
+    n++;
+    var id = 'cA' + n;
+    var o = '<svg class="bot-svg coach-svg" viewBox="0 0 100 100" aria-hidden="true"><defs>' +
+      '<radialGradient id="' + id + 'g" cx="38%" cy="30%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#14a38b" stop-opacity=".9"/><stop offset="1" stop-color="#0d7a68"/></radialGradient>' +
+      '<clipPath id="' + id + 'c"><circle cx="50" cy="50" r="50"/></clipPath></defs><g clip-path="url(#' + id + 'c)">';
+    if (bg) {
+      o += '<rect width="100" height="100" fill="url(#' + id + 'g)"/>';
+      for (var i = 0; i < 12; i++) { var a = i * 30 * Math.PI / 180; o += '<path d="M50 52L' + (50 + 80 * Math.cos(a - 0.12)).toFixed(1) + ' ' + (52 + 80 * Math.sin(a - 0.12)).toFixed(1) + 'L' + (50 + 80 * Math.cos(a + 0.12)).toFixed(1) + ' ' + (52 + 80 * Math.sin(a + 0.12)).toFixed(1) + 'z" fill="#fff" opacity=".07"/>'; }
+    }
+    // majica i vrat
+    o += '<path d="M12 104c2-17 16-27 38-27s36 10 38 27z" fill="#1f2228" stroke="' + INK + '" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<path d="M42 64h16v14c-3 4-13 4-16 0z" fill="' + SKIN2 + '" stroke="' + INK + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M41 78c3 4 15 4 18 0" fill="none" stroke="#3a3d45" stroke-width="2"/>';
+    // zviždaljka na vrpci
+    o += '<path d="M40 79l9 13m11-13l-9 13" stroke="#e11d48" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<g stroke="' + INK + '" stroke-width="1.8" stroke-linejoin="round"><rect x="44" y="90" width="13" height="7" rx="3.5" fill="#d7dbe2"/><rect x="55" y="91.5" width="6" height="4" rx="1.5" fill="#b9bfc9"/></g>';
+    // uši
+    o += '<g fill="' + SKIN + '" stroke="' + INK + '" stroke-width="2.4"><ellipse cx="26.5" cy="49" rx="4.6" ry="7"/><ellipse cx="73.5" cy="49" rx="4.6" ry="7"/></g>';
+    // lice
+    o += '<path d="M27 44c0-15 10-24 23-24s23 9 23 24c0 13-4 21-10 25-4 3-8 4-13 4s-9-1-13-4c-6-4-10-12-10-25z" fill="' + SKIN + '" stroke="' + INK + '" stroke-width="2.6" stroke-linejoin="round"/>';
+    // brada (rijetka) i bradica
+    o += '<path d="M31 57c2 7 6 11 11 13 3 1 5 1.5 8 1.5s5-.5 8-1.5c5-2 9-6 11-13-2 5-6 9-11 10.5-2.5.7-5 1-8 1s-5.5-.3-8-1c-5-1.5-9-5.5-11-10.5z" fill="' + BEARD + '" opacity=".45"/>' +
+      '<path d="M46 66c1 3 2.5 5 4 5s3-2 4-5c-1.4.6-2.6.9-4 .9s-2.6-.3-4-.9z" fill="' + BEARD + '"/>';
+    // brkovi
+    o += '<path d="M40.5 60.5c3-3.5 6-4.3 9.5-3.2 3.5-1.1 6.5-.3 9.5 3.2-3-1.2-6-1.4-9.5-.4-3.5-1-6.5-.8-9.5.4z" fill="' + BEARD + '" stroke="' + HAIR2 + '" stroke-width=".8"/>';
+    // usta i nos
+    o += '<path d="M45 64.3c3 1.2 7 1.2 10 0" fill="none" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M50.5 46c-1 4-2.4 7-2 8.6.5 1.4 3 1.6 5 .6" fill="none" stroke="' + INK + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+    // oči
+    o += '<g stroke="' + INK + '" stroke-width="1.6"><ellipse cx="40.5" cy="46" rx="4.8" ry="3.4" fill="#fff"/><ellipse cx="59.5" cy="46" rx="4.8" ry="3.4" fill="#fff"/></g>' +
+      '<circle cx="41" cy="46.2" r="2.5" fill="' + EYE + '"/><circle cx="60" cy="46.2" r="2.5" fill="' + EYE + '"/><circle cx="41" cy="46.2" r="1.1" fill="' + INK + '"/><circle cx="60" cy="46.2" r="1.1" fill="' + INK + '"/>' +
+      '<circle cx="41.9" cy="45.3" r=".7" fill="#fff"/><circle cx="60.9" cy="45.3" r=".7" fill="#fff"/>' +
+      '<path d="M35 46.5c1.5-.6 2.6-.7 3.5-.6M65 46.5c-1.5-.6-2.6-.7-3.5-.6" stroke="' + INK + '" stroke-width="1.2" stroke-linecap="round" opacity=".5"/>';
+    // obrve (guste)
+    o += '<path d="M34 40.5c3-3 8-3.8 12.5-1.8M66 40.5c-3-3-8-3.8-12.5-1.8" fill="none" stroke="' + BROW + '" stroke-width="3.4" stroke-linecap="round"/>';
+    // kosa: kratka sa strane, neuredne šiške
+    o += '<path d="M26 45c-2-15 7-27 24-27.5 16-.5 27 9 25 27l-2.6-6.2-1.5 2.4-2.4-7.6-3.5 4.6-2.2-7.4-4.6 5.2-2.5-6.8-4.3 6-3.2-5.6-3.6 5.4-2.4-4.2-3.4 5.6-1.8-3.1-3.2 6.2z" fill="' + HAIR + '" stroke="' + INK + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M33 24c5-3 11-4 17-3.6M55 21c6 .5 11 3 14 7M40 22.5c-2 3-3 6-3.4 9.5M58 22.5c2 2.5 3 5 3.4 8" fill="none" stroke="' + HAIR3 + '" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>' +
+      '<path d="M57.5 19c3-3 7-3.5 9-2.5M47 18.5c-2-2.6-1-4.4 1.5-5" fill="none" stroke="' + INK + '" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M27.5 47c-.8-3.5-.6-6 .4-8.5M72.5 47c.8-3.5.6-6-.4-8.5" fill="none" stroke="' + HAIR2 + '" stroke-width="2.4" stroke-linecap="round"/>';
+    o += '</g></svg>';
+    return o;
+  }
+  return { svg: svg };
+})();
+
+
 // "Kazni grešku": protivničke greške u otvaranjima, provjerene pretraživanjem.
 var TRAPS = {"kid":[["kid-0","rnbq1rk1/1pp2pb1/3p1npp/p2Pp1B1/2P1P3/2N2N2/PP2BPPP/R2QK2R w KQ - 0 9","c3a4 h6g5",1090,"Umjesto teorije protivnik je odigrao 9.Na4. Pravi nastavak je hxg5. Na kraju osvajaš lovca za pješaka. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Petrosjanov sustav (7.d5)","9.Na4"],["kid-1","rnbq1rk1/pp2ppb1/3p1n1p/2pP2p1/2P1P2B/2N2N2/PP3PPP/R2QKB1R w KQ - 0 9","f3d2 g5h4",1090,"Umjesto teorije protivnik je odigrao 9.Nd2. Pravi nastavak je gxh4. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Smislov, 6...c5","9.Nd2"],["kid-2","rn3rk1/pp2ppbp/3p1np1/2q5/2P1PPb1/2NB1N2/PP2Q1PP/R1B1K2R w KQ - 0 10","f3g5 g4e2",1090,"Umjesto teorije protivnik je odigrao 10.Ng5. Pravi nastavak je Bxe2. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Četiri pješaka, 7.dxc5","10.Ng5"],["kid-3","r1bq1rk1/pppnn1bp/3p2p1/3Pp3/2P1Pp2/2N1BP2/PP2B1PP/R2QNRK1 w - - 0 12","c3b1 f4e3",1090,"Umjesto teorije protivnik je odigrao 12.Nb1. Pravi nastavak je fxe3. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Mar del Plata, glavna linija","12.Nb1"],["kid-4","r1b1qrk1/1ppn1p2/n2p1bpp/p2Pp3/2P1P2B/P1N5/1P1NBPPP/R2Q1RK1 w - - 0 13","c3b5 f6h4",1090,"Umjesto teorije protivnik je odigrao 13.Nb5. Pravi nastavak je Bxh4. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Petrosjanov sustav (7.d5)","13.Nb5"],["kid-5","rn1qr1k1/pp3pbp/3p1np1/2pP2B1/2P3b1/2N2N2/PP1QBPPP/R3K2R w KQ - 0 11","g2g3 g4f3",1090,"Umjesto teorije protivnik je odigrao 11.g3. Pravi nastavak je Bxf3. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Averbah, 6...c5","11.g3"],["kid-6","r1bqr1k1/pppn1pbp/3p1np1/4p3/3P1B2/2P1PN1P/PP2BPP1/RN1Q1RK1 w - e6 0 9","d1b3 e5f4",1090,"Umjesto teorije protivnik je odigrao 9.Qb3. Pravi nastavak je exf4. Na kraju osvajaš lovca za pješaka. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Londonski sustav protiv KID-a","9.Qb3"]],"skotski":[["skotski-0","r1bqk2r/pppp1ppp/2n2n2/2b5/2BPP3/5N2/PP3PPP/RNBQK2R b KQkq - 0 6","f6g8 d4c5",1090,"Umjesto teorije protivnik je odigrao 6...Ng8. Pravi nastavak je dxc5. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4...Bc5 5.c3, glavna linija","6...Ng8"],["skotski-1","r1bqk2r/ppp2ppp/2n2n2/3P4/2BP4/5N2/PP1N1PPP/R2QK2R b KQkq - 0 9","e8g8 d5c6",1090,"Umjesto teorije protivnik je odigrao 9...O-O. Pravi nastavak je dxc6. Na kraju osvajaš konja za pješaka. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4...Bc5 5.c3, glavna linija","9...O-O"],["skotski-3","r3k2r/ppp2ppp/2n1bP2/2bq2N1/2pp4/2N5/PPP2PPP/R1BQR1K1 b kq - 0 10","e8c8 c3d5",1090,"Umjesto teorije protivnik je odigrao 10...O-O-O. Pravi nastavak je Nxd5. Na kraju osvajaš damu za konja. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Max Langeov napad","10...O-O-O"],["skotski-5","r1bq1rk1/ppp1nppp/8/3n4/2BP4/1Q3N2/PP1N1PPP/R3R1K1 b - - 0 12","e7c6 c4d5",1090,"Umjesto teorije protivnik je odigrao 12...Nc6. Pravi nastavak je Bxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4...Bc5 5.c3, glavna linija","12...Nc6"],["skotski-2","r1bqk2r/ppp2ppp/2n5/3n4/2BP4/1Q3N2/PP1N1PPP/R3K2R b KQkq - 0 10","c8d7 c4d5",1150,"Umjesto teorije protivnik je odigrao 10...Bd7. Pravi nastavak je Bxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4...Bc5 5.c3, glavna linija","10...Bd7"],["skotski-4","r1bqk2r/ppp1nppp/8/3n4/2BP4/1Q3N2/PP1N1PPP/R4RK1 b kq - 0 11","e7g8 c4d5",1150,"Umjesto teorije protivnik je odigrao 11...Ng8. Pravi nastavak je Bxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4...Bc5 5.c3, glavna linija","11...Ng8"],["skotski-6","r1bqkb1r/ppp2ppp/2n2n2/1B1pP3/3p4/5N2/PPP2PPP/RNBQK2R b KQkq - 0 6","b7b6 b5c6",1150,"Umjesto teorije protivnik je odigrao 6...b6. Pravi nastavak je Bxc6+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4...Nf6 5.e5","6...b6"]],"najdorf":[["najdorf-0","rnbqkb1r/1p3ppp/p2p1n2/4p3/3NP3/2N1B3/PPP2PPP/R2QKB1R w KQkq e6 0 7","e3d2 e5d4",1090,"Umjesto teorije protivnik je odigrao 7.Bd2. Pravi nastavak je exd4. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Engleski napad","7.Bd2"],["najdorf-1","rnbqkb1r/1p3ppp/p2p1n2/4p3/3NP3/2N5/PPP1BPPP/R1BQK2R w KQkq e6 0 7","e2d3 e5d4",1090,"Umjesto teorije protivnik je odigrao 7.Bd3. Pravi nastavak je exd4. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","6.Be2, pozicijski sustav","7.Bd3"],["najdorf-3","r1b1kb1r/1p3ppp/p1nppn2/5PB1/3NP3/q1N5/P1PQ2PP/1R2KB1R w Kkq - 0 11","f1d3 c6d4",1090,"Umjesto teorije protivnik je odigrao 11.Bd3. Pravi nastavak je Nxd4. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Otrovni pješak","11.Bd3"],["najdorf-4","rnb1kb1r/1p3ppp/pq1ppn2/6B1/3NPP2/2N5/PPP3PP/R2QKB1R w KQkq - 0 8","d1c1 b6d4",1090,"Umjesto teorije protivnik je odigrao 8.Qc1. Pravi nastavak je Qxd4. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Otrovni pješak","8.Qc1"],["najdorf-2","rnb1kb1r/1p3ppp/p2ppn2/6B1/3NPP2/2N5/PqPQ2PP/R3KB1R w KQkq - 0 9","d4e2 b2a1",1150,"Umjesto teorije protivnik je odigrao 9.Nde2. Pravi nastavak je Qxa1+. Na kraju osvajaš topa. ","Dobij topa (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Otrovni pješak","9.Nde2"],["najdorf-6","r1b1kb1r/1p4pp/p1nppn2/6B1/3NP3/q1N5/P1PQ2PP/1R2KB1R w Kkq - 0 12","d2f4 a3c3",1210,"Umjesto teorije protivnik je odigrao 12.Qf4. Pravi nastavak je Qxc3+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Otrovni pješak","12.Qf4"],["najdorf-5","rnb1kb1r/1p3ppp/p2ppn2/6B1/3NPP2/q1N5/P1PQ2PP/1R2KB1R w Kkq - 0 10","d2e2 a3c3",1270,"Umjesto teorije protivnik je odigrao 10.Qe2. Pravi nastavak je Qxc3+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Otrovni pješak","10.Qe2"]],"zmaj":[["zmaj-2","r1bq1rk1/p3ppbp/2p3p1/3n4/8/2N1BP2/PPPQ2PP/2KR1B1R w - - 0 12","b2b3 g7c3",1090,"Umjesto teorije protivnik je odigrao 12.b3. Pravi nastavak je Bxc3. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Jugoslavenski napad, 9.O-O-O d5","12.b3"],["zmaj-0","r1bq1rk1/pp2ppbp/2np1np1/8/3NP3/2N1B3/PPP1BPPP/R2Q1RK1 w - - 0 9","e3d2 c6d4",1150,"Umjesto teorije protivnik je odigrao 9.Bd2. Pravi nastavak je Nxd4. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Klasični sustav (6.Be2)","9.Bd2"],["zmaj-1","2rq1rk1/pp1bppbp/3p1np1/8/2nNP3/1BN1BP2/PPPQ2PP/1K1R3R w - - 0 13","d4b5 c4d2",1150,"Umjesto teorije protivnik je odigrao 13.Ndb5. Pravi nastavak je Nxd2+. Na kraju osvajaš damu za konja. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Jugoslavenski napad, 9.Bc4","13.Ndb5"]],"evans":[["evans-0","r1bqk1nr/pppp1ppp/2n5/2b1p3/1PB1P3/5N2/P1PP1PPP/RNBQK2R b KQkq b3 0 4","g8e7 b4c5",1090,"Umjesto teorije protivnik je odigrao 4...Nge7. Pravi nastavak je bxc5. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","5...Ba5, glavna linija s Ba3","4...Nge7"],["evans-1","r1bqk2r/1ppp1ppp/pb6/P2Pp3/1PBn4/5N2/2PP1PPP/R1BQK2R b KQkq - 0 9","d4b5 a5b6",1090,"Umjesto teorije protivnik je odigrao 9...Nb5. Pravi nastavak je axb6. Na kraju osvajaš lovca za pješaka. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Odbijeni gambit, 4...Bb6","9...Nb5"],["evans-2","r1bqk1nr/ppppbppp/8/n7/3QP3/2P2N2/P3BPPP/RNB1K2R b KQkq - 0 8","g7g6 d4h8",1090,"Umjesto teorije protivnik je odigrao 8...g6. Pravi nastavak je Qxh8. Na kraju osvajaš topa. ","Dobij topa (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","5...Be7, Kasparovljeva linija","8...g6"]],"kraljev-gambit":[["kraljev-gambit-0","rnbqk2r/ppp2ppp/8/2bP4/4nP2/5N2/PPP1Q1PP/RNB1KB1R b KQkq - 0 7","c8g4 e2e4",1210,"Umjesto teorije protivnik je odigrao 7...Bg4. Pravi nastavak je Qxe4+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Falkbeerov protugambit","7...Bg4"]],"talijanska":[["talijanska-0","r1bqkb1r/pppp1ppp/2n2n2/4p1N1/2B1P3/8/PPPP1PPP/RNBQK2R b KQkq - 0 4","c6e7 c4f7",760,"Umjesto teorije protivnik je odigrao 4...Ne7. Bxf7# je mat. I s malo figura kralj na rubu ploče lako upada u matnu mrežu.","Mat u 1 (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","egmate","4.Ng5 d5, glavna linija s 5...Na5","4...Ne7"],["talijanska-1","r1bqk2r/pppp1ppp/2n2n2/2b5/2BPP3/5N2/PP3PPP/RNBQK2R b KQkq - 0 6","f6g8 d4c5",1090,"Umjesto teorije protivnik je odigrao 6...Ng8. Pravi nastavak je dxc5. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","5.d4, glavna linija s 10.Qb3","6...Ng8"],["talijanska-2","r1bqkb1r/ppp2Npp/2n5/3np3/2B5/8/PPPP1PPP/RNBQK2R b KQkq - 0 6","c8d7 f7d8",1090,"Umjesto teorije protivnik je odigrao 6...Bd7. Pravi nastavak je Nxd8. Na kraju osvajaš damu za konja. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Pečena jetra: zamka 5...Nxd5?","6...Bd7"],["talijanska-3","r1bqk2r/ppp2ppp/2n2n2/3P4/2BP4/5N2/PP1N1PPP/R2QK2R b KQkq - 0 9","e8g8 d5c6",1090,"Umjesto teorije protivnik je odigrao 9...O-O. Pravi nastavak je dxc6. Na kraju osvajaš konja za pješaka. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","5.d4, glavna linija s 10.Qb3","9...O-O"],["talijanska-6","r1bq1rk1/ppp1nppp/8/3n4/2BP4/1Q3N2/PP1N1PPP/R3R1K1 b - - 0 12","e7c6 c4d5",1090,"Umjesto teorije protivnik je odigrao 12...Nc6. Pravi nastavak je Bxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","5.d4, glavna linija s 10.Qb3","12...Nc6"],["talijanska-7","r1bqkb1r/ppp2ppp/2n2n2/3Pp1N1/2B5/8/PPPP1PPP/RNBQK2R b KQkq - 0 5","a7a6 d5c6",1090,"Umjesto teorije protivnik je odigrao 5...a6. Pravi nastavak je dxc6. Na kraju osvajaš konja za pješaka. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4.Ng5 d5, glavna linija s 5...Na5","5...a6"],["talijanska-4","r1bqk2r/ppp2ppp/2n5/3n4/2BP4/1Q3N2/PP1N1PPP/R3K2R b KQkq - 0 10","c8d7 c4d5",1150,"Umjesto teorije protivnik je odigrao 10...Bd7. Pravi nastavak je Bxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","5.d4, glavna linija s 10.Qb3","10...Bd7"],["talijanska-5","r1bqk2r/ppp1nppp/8/3n4/2BP4/1Q3N2/PP1N1PPP/R4RK1 b kq - 0 11","e7g8 c4d5",1150,"Umjesto teorije protivnik je odigrao 11...Ng8. Pravi nastavak je Bxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","5.d4, glavna linija s 10.Qb3","11...Ng8"]],"spanjolska":[["spanjolska-0","r1bq1rk1/2p1bppp/p1n2n2/1p1Pp3/8/1BP2N2/PP1P1PPP/RNBQR1K1 b - - 0 9","c8b7 d5c6",1090,"Umjesto teorije protivnik je odigrao 9...Bb7. Pravi nastavak je dxc6. Na kraju osvajaš konja za pješaka. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Marshallov napad, glavna linija","9...Bb7"],["spanjolska-1","r3kbnr/1pp3pp/p4p2/2p5/4P1b1/1N3P2/PPP3PP/RNBR2K1 b kq - 0 10","f8e7 f3g4",1090,"Umjesto teorije protivnik je odigrao 10...Be7. Pravi nastavak je fxg4. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Izmjenska, 4.Bxc6","10...Be7"],["spanjolska-2","r1bq1rk1/2p1bppp/p1n5/1p1nN3/8/1BP5/PP1P1PPP/RNBQR1K1 b - - 0 10","c8d7 b3d5",1090,"Umjesto teorije protivnik je odigrao 10...Bd7. Pravi nastavak je Bxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Marshallov napad, glavna linija","10...Bd7"],["spanjolska-3","r1b2rk1/5ppp/p1pb4/1p1n4/3P3q/1BP3P1/PP3P1P/RNBQR1K1 b - - 0 14","c8b7 g3h4",1090,"Umjesto teorije protivnik je odigrao 14...Bb7. Pravi nastavak je gxh4. Na kraju osvajaš damu. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Marshallov napad, glavna linija","14...Bb7"],["spanjolska-4","r1bqkbnr/1ppp1ppp/p1B5/4p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 4","b7b6 c6a8",1150,"Umjesto teorije protivnik je odigrao 4...b6. Pravi nastavak je Bxa8. Na kraju osvajaš topa. ","Dobij topa (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Izmjenska, 4.Bxc6","4...b6"],["spanjolska-5","r1bq1rk1/2p1bppp/p7/1p1nR3/8/1BP5/PP1P1PPP/RNBQ2K1 b - - 0 11","f7f6 e5d5",1150,"Umjesto teorije protivnik je odigrao 11...f6. Pravi nastavak je Rxd5. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Marshallov napad, glavna linija","11...f6"]],"dg":[["dg-0","rnbqkb1r/ppp2ppp/4pn2/3p2B1/2PP4/2N5/PP2PPPP/R2QKBNR b KQkq - 0 4","f6g8 g5d8",1090,"Umjesto teorije protivnik je odigrao 4...Ng8. Pravi nastavak je Bxd8. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Ortodoksna obrana, Tartakower","4...Ng8"],["dg-1","rnbqkb1r/ppp2ppp/5n2/3p2B1/3P4/2N5/PP2PPPP/R2QKBNR b KQkq - 0 5","f6d7 g5d8",1090,"Umjesto teorije protivnik je odigrao 5...Nfd7. Pravi nastavak je Bxd8. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Izmjenska, napad manjine","5...Nfd7"],["dg-2","rnbqkb1r/pp3ppp/2p2n2/3p2B1/3P4/2N1P3/PP3PPP/R2QKBNR b KQkq - 0 6","f6e4 g5d8",1090,"Umjesto teorije protivnik je odigrao 6...Ne4. Pravi nastavak je Bxd8. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Izmjenska, napad manjine","6...Ne4"],["dg-3","rnbq1rk1/p1p1Bpp1/1p2p2p/3n4/3P4/2N1PN2/PP3PPP/R2QKB1R b KQ - 0 9","b8a6 e7d8",1090,"Umjesto teorije protivnik je odigrao 9...Na6. Pravi nastavak je Bxd8. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Ortodoksna obrana, Tartakower","9...Na6"],["dg-4","r1bqkb1r/1p3ppp/p1n1pn2/8/P1Bp4/4PN2/1P2QPPP/RNBR2K1 b kq - 0 9","d4e3 d1d8",1150,"Umjesto teorije protivnik je odigrao 9...dxe3. Pravi nastavak je Rxd8+. Na kraju osvajaš damu za topa. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Prihvaćeni, klasična linija","9...dxe3"],["dg-5","rnb2rk1/p1p1qpp1/1p2p2p/3N4/3P4/4PN2/PP3PPP/R2QKB1R b KQ - 0 10","b8d7 d5e7",1150,"Umjesto teorije protivnik je odigrao 10...Nd7. Pravi nastavak je Nxe7+. Na kraju osvajaš damu. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Ortodoksna obrana, Tartakower","10...Nd7"]],"london":[["london-0","rn2kbnr/pp3ppp/1qp1p3/2Pp1b2/3P1B2/1QN5/PP2PPPP/R3KBNR b KQkq - 0 6","b8d7 c5b6",1090,"Umjesto teorije protivnik je odigrao 6...Nd7. Pravi nastavak je cxb6. Na kraju osvajaš damu. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Simetrična, 3.c4 i Qb3","6...Nd7"],["london-1","rnbq1rk1/pp3ppp/3bpn2/2pp4/3P4/2PBPNB1/PP3PPP/RN1QK2R b KQ - 0 7","b8d7 g3d6",1090,"Umjesto teorije protivnik je odigrao 7...Nbd7. Pravi nastavak je Bxd6. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Glavni sustav s Ne5","7...Nbd7"],["london-2","r1bq1rk1/pp3ppp/2nbpn2/2pp4/3P4/2PBPNB1/PP1N1PPP/R2QK2R b KQ - 0 8","c8d7 g3d6",1090,"Umjesto teorije protivnik je odigrao 8...Bd7. Pravi nastavak je Bxd6. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Glavni sustav s Ne5","8...Bd7"],["london-3","r1b1kbnr/pp2pppp/1qn5/2pp4/3P1B2/1QP1P3/PP3PPP/RN2KBNR b KQkq - 0 5","a7a6 b3b6",1090,"Umjesto teorije protivnik je odigrao 5...a6. Pravi nastavak je Qxb6. Na kraju osvajaš damu. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","...c5 i ...Qb6","5...a6"]],"engleska":[["engleska-0","r1bqkb1r/ppp2ppp/2n2n2/3Pp3/8/2N2NP1/PP1PPP1P/R1BQKB1R b KQkq - 0 5","c8f5 d5c6",1090,"Umjesto teorije protivnik je odigrao 5...Bf5. Pravi nastavak je dxc6. Na kraju osvajaš konja za pješaka. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","1...e5, obrnuti zmaj","5...Bf5"],["engleska-1","rnbqk2r/ppppppbp/5np1/8/2P5/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 0 4","b7b6 g2a8",1090,"Umjesto teorije protivnik je odigrao 4...b6. Pravi nastavak je Bxa8. Na kraju osvajaš topa. ","Dobij topa (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","1...Nf6 g6, bez d4","4...b6"]],"becka":[["becka-0","rnbqkb1r/ppp2ppp/5n2/3pP3/4P3/2N5/PPPP2PP/R1BQKBNR b KQkq - 0 4","b8c6 e5f6",1090,"Umjesto teorije protivnik je odigrao 4...Nc6. Pravi nastavak je exf6. Na kraju osvajaš konja za pješaka. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","2...Nf6 3.f4 d5, glavna linija","4...Nc6"],["becka-1","rnbqkb1r/ppp2ppp/8/3pP3/4n3/2N2N2/PPPP2PP/R1BQKB1R b KQkq - 0 5","d5d4 c3e4",1090,"Umjesto teorije protivnik je odigrao 5...d4. Pravi nastavak je Nxe4. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","2...Nf6 3.f4 d5, glavna linija","5...d4"]],"francuska":[["francuska-1","r2qk2r/ppp1nppp/2nb4/3p4/3P2b1/2PB1N2/PP3PPP/RNBQ1RK1 w kq - 0 8","f3e5 g4d1",1090,"Umjesto teorije protivnik je odigrao 8.Ne5. Pravi nastavak je Bxd1. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3.exd5 exd5, aktivno s ...Nc6","8.Ne5"],["francuska-2","rnb1k1r1/ppq1npQp/4p3/2ppP3/3P4/P1P5/2P2PPP/R1B1KBNR w KQq - 0 9","d4c5 g8g7",1090,"Umjesto teorije protivnik je odigrao 9.dxc5. Pravi nastavak je Rxg7. Na kraju osvajaš damu. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3.Nc3 Bb4, otrovni pješak","9.dxc5"],["francuska-3","r1bqk2r/pp1n1ppp/2n1p3/2bpP3/3N1P2/2N1B3/PPP3PP/R2QKB1R w KQkq - 0 9","d4b5 c5e3",1090,"Umjesto teorije protivnik je odigrao 9.Ndb5. Pravi nastavak je Bxe3. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Steinitz, 4.e5 Nfd7 5.f4","9.Ndb5"],["francuska-5","rnb1kbnr/pp3ppp/4p3/2pq4/3P4/8/PPPN1PPP/R1BQKBNR w KQkq - 0 5","g2g3 d5h1",1090,"Umjesto teorije protivnik je odigrao 5.g3. Pravi nastavak je Qxh1. Na kraju osvajaš topa. ","Dobij topa (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3.Nd2 c5, izolirani pješak","5.g3"],["francuska-4","rnbqk1nr/ppp2ppp/4p3/3p4/1b1PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 4","b2b3 b4c3",1150,"Umjesto teorije protivnik je odigrao 4.b3. Pravi nastavak je Bxc3+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3.Nc3 Bb4, otrovni pješak","4.b3"],["francuska-0","r1bqkb1r/pp1n1ppp/2n1p3/3pP3/3p1P2/2N1BN2/PPP3PP/R2QKB1R w KQkq - 0 8","c3b5 d4e3",1210,"Umjesto teorije protivnik je odigrao 8.Nb5. Pravi nastavak je dxe3. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Steinitz, 4.e5 Nfd7 5.f4","8.Nb5"]],"caro":[["caro-0","r2qkb1r/pp2pppp/2n2n2/3p4/3P1Bb1/2PB4/PP3PPP/RN1QK1NR w KQkq - 0 7","f4e5 g4d1",1090,"Umjesto teorije protivnik je odigrao 7.Be5. Pravi nastavak je Bxd1. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Izmjenska s 4.Bd3","7.Be5"],["caro-1","r3k2r/pp1q1ppp/2nbpn2/3p4/3P1B2/1QPB1N2/PP3PPP/R3K2R w KQkq - 0 11","d3b5 d6f4",1090,"Umjesto teorije protivnik je odigrao 11.Bb5. Pravi nastavak je Bxf4. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Izmjenska s 4.Bd3","11.Bb5"],["caro-3","r3kb1r/pp1q1ppp/2n1pn2/3p4/3P1B2/1QPB1b2/PP1N1PPP/R3K2R w KQkq - 0 10","g2g3 f3h1",1090,"Umjesto teorije protivnik je odigrao 10.g3. Pravi nastavak je Bxh1. Na kraju osvajaš topa. ","Dobij topa (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Izmjenska s 4.Bd3","10.g3"],["caro-2","rn1qkbnr/pp2pppp/2p5/5b2/3PN3/8/PPP2PPP/R1BQKBNR w KQkq - 0 5","d4d5 f5e4",1150,"Umjesto teorije protivnik je odigrao 5.d5. Pravi nastavak je Bxe4. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Klasična s 6.h4","5.d5"]],"skandinavska":[["skandinavska-0","rn2kb1r/1pp1pppp/p2q1n2/8/3P2b1/2N2NP1/PPP2P1P/R1BQKB1R w KQkq - 0 7","c3e2 g4f3",1090,"Umjesto teorije protivnik je odigrao 7.Ne2. Pravi nastavak je Bxf3. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3...Qd6 s dugom rokadom","7.Ne2"],["skandinavska-3","r3k2r/pp1n1ppp/2p1pn2/q4b2/1bBP4/2N2N2/PPPBQPPP/2KR3R w kq - 0 10","b2b3 b4c3",1090,"Umjesto teorije protivnik je odigrao 10.b3. Pravi nastavak je Bxc3. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3...Qa5, glavna linija","10.b3"],["skandinavska-1","r3kb1r/1pp1pppp/p1nq1n2/8/3P2b1/2N2NP1/PPP2PBP/R1BQK2R w KQkq - 0 8","f3e5 g4d1",1150,"Umjesto teorije protivnik je odigrao 8.Ne5. Pravi nastavak je Bxd1. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3...Qd6 s dugom rokadom","8.Ne5"],["skandinavska-2","rnb1kb1r/ppp1pppp/5n2/q7/3P4/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 5","b2b3 a5c3",1150,"Umjesto teorije protivnik je odigrao 5.b3. Pravi nastavak je Qxc3+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","3...Qa5, glavna linija","5.b3"]],"pirc":[["pirc-0","r1bqk2r/p2npp1p/2pp1npb/1p6/3PP3/2N2P2/PPPQN1PP/R3KB1R w KQkq - 0 9","c3b1 h6d2",1150,"Umjesto teorije protivnik je odigrao 9.Nb1. Pravi nastavak je Bxd2+. Na kraju osvajaš damu za lovca. ","Dobij damu (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4.Be3, s ...c6 i ...b5","9.Nb1"],["pirc-1","rnb2rk1/pp2ppbp/3p1np1/2q5/4PP2/2NB1N2/PPP1Q1PP/R1B1K2R w KQ - 0 9","b2b3 c5c3",1150,"Umjesto teorije protivnik je odigrao 9.b3. Pravi nastavak je Qxc3+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4.f4 Bg7 5.Nf3 c5","9.b3"]],"slavenska":[["slavenska-0","r1bqkb1r/pp1n1ppp/2p1pn2/8/2pP4/2NBPN2/PP3PPP/R1BQK2R w KQkq - 0 7","f3d2 c4d3",1090,"Umjesto teorije protivnik je odigrao 7.Nd2. Pravi nastavak je cxd3. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Meranska varijanta","7.Nd2"],["slavenska-1","r1bqkb1r/p2n1ppp/2p1pn2/1p6/2BP4/2N1PN2/PP3PPP/R1BQK2R w KQkq b6 0 8","c1d2 b5c4",1090,"Umjesto teorije protivnik je odigrao 8.Bd2. Pravi nastavak je bxc4. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","Meranska varijanta","8.Bd2"],["slavenska-2","rn1q1rk1/pp3ppp/2p1pn2/5b2/PbBP4/2N1PN2/1P3PPP/R1BQ1RK1 w - - 0 9","b2b3 b4c3",1090,"Umjesto teorije protivnik je odigrao 9.b3. Pravi nastavak je Bxc3. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4...dxc4 5.a4 Bf5","9.b3"]],"nimzo":[["nimzo-0","rn1q1rk1/pbpp1pp1/1p2pn1p/6B1/2PP4/P1Q2P2/1P2P1PP/R3KBNR w KQ - 0 9","e1c1 h6g5",1090,"Umjesto teorije protivnik je odigrao 9.O-O-O. Pravi nastavak je hxg5. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4.Qc2 O-O 5.a3 Bxc3+","9.O-O-O"],["nimzo-1","r1bq1rk1/pp3ppp/2n1pn2/2p5/2pP4/P1PBPN2/5PPP/R1BQ1RK1 w - - 0 10","c1d2 c4d3",1090,"Umjesto teorije protivnik je odigrao 10.Bd2. Pravi nastavak je cxd3. Na kraju osvajaš lovca. ","Dobij lovca (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4.e3 O-O 5.Bd3 d5","10.Bd2"],["nimzo-3","rn1q1rk1/pbpp1ppp/1p2pn2/6B1/2PP4/P1Q5/1P2PPPP/R3KBNR w KQ - 0 8","g2g3 b7h1",1090,"Umjesto teorije protivnik je odigrao 8.g3. Pravi nastavak je Bxh1. Na kraju osvajaš topa. ","Dobij topa (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4.Qc2 O-O 5.a3 Bxc3+","8.g3"],["nimzo-2","rnbq1rk1/pppp1ppp/4pn2/8/1bPP4/2N1P3/PP3PPP/R1BQKBNR w KQ - 0 5","b2b3 b4c3",1150,"Umjesto teorije protivnik je odigrao 5.b3. Pravi nastavak je Bxc3+. Na kraju osvajaš konja. ","Dobij konja (1 potez)","Protivnik je pogriješio. Traži kako to iskoristiti.","gen","4.e3 O-O 5.Bd3 d5","5.b3"]]};
 
@@ -8671,22 +8757,24 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     const ops = OPENINGS.slice().sort((x, y) => opLvl(y)[0] - opLvl(x)[0]);
     const op = OPS[c.op], side = sideOf(op);
     const nx = BOTS.find((x) => starsOf(x[0]) < 3);
-    const tile = (x) => { const n = starsOf(x[0]); return '<button class="bt t' + tierOf(x[0]) + (x[0] === elo ? ' on' : '') + (n >= 3 ? ' won' : '') + '" data-elo="' + x[0] + '" aria-pressed="' + (x[0] === elo) + '">' + (nx && nx[0] === x[0] ? '<em class="bt-next">Sljedeći</em>' : '') + '<span class="bt-av">' + BOT_ART.svg(x[0], true) + '</span><b>' + esc(x[1]) + '</b><span class="bt-elo">' + x[0] + ' Elo</span>' + starsHtml(n, 'sm') + '</button>'; };
+    const tile = (x) => { const n = starsOf(x[0]); return '<button class="bt t' + tierOf(x[0]) + (x[0] === elo && !c.coach ? ' on' : '') + (n >= 3 ? ' won' : '') + '" data-elo="' + x[0] + '" aria-pressed="' + (x[0] === elo) + '">' + (nx && nx[0] === x[0] ? '<em class="bt-next">Sljedeći</em>' : '') + '<span class="bt-av">' + BOT_ART.svg(x[0], true) + '</span><b>' + esc(x[1]) + '</b><span class="bt-elo">' + x[0] + ' Elo</span>' + starsHtml(n, 'sm') + '</button>'; };
     const ladder = TIERS.map((t) => '<div class="bt-tier"><h3>' + t[0] + '<small>' + t[1] + (t[2] > t[1] ? '\u2013' + t[2] : '') + ' Elo</small></h3><div class="bt-row">' + BOTS.filter((x) => x[0] >= t[1] && x[0] <= t[2]).map(tile).join('') + '</div></div>').join('');
     const tot = totalStars(), msg = st >= 3 ? 'Pobijedio si ovog bota. Probaj sljedećeg!' : st === 2 ? 'Pobijedio si uz pomoć. Pobijedi bez savjeta i vraćanja za treću zvjezdicu.' : st === 1 ? 'Remizirao si. Pobjeda donosi još zvjezdica.' : 'Još ga nisi pobijedio.';
     $('#plBody').innerHTML =
       '<div class="pl-grid">' +
-      '<section class="pl-sec pl-bots"><h2><i>1</i>Odaberi protivnika<span class="pl-tot">' + STAR + '<b>' + tot + '</b>/' + MAX_STARS + '</span></h2><p class="muted small pl-rule">Pobjeda bez savjeta i vraćanja poteza: 3 zvjezdice. Pobjeda uz pomoć: 2. Remi: 1.</p>' + ladder + '</section>' +
-      '<section class="pl-sec pl-bot"><div class="bot-card t' + tierOf(elo) + (st >= 3 ? ' won' : '') + '"><span class="bot-av">' + BOT_ART.svg(b[0], true) + '</span><div><b>' + esc(b[1]) + '</b><span class="bot-elo"><em id="plElo">' + elo + '</em> Elo</span>' + starsHtml(st, 'md') + '</div></div>' +
+      '<section class="pl-sec pl-bots"><h2><i>1</i>Odaberi protivnika<span class="pl-tot">' + STAR + '<b>' + tot + '</b>/' + MAX_STARS + '</span></h2>' + coachPickHtml(c) + '<p class="muted small pl-rule">Pobjeda bez savjeta i vraćanja poteza: 3 zvjezdice. Pobjeda uz pomoć: 2. Remi: 1.</p>' + ladder + '</section>' +
+      '<section class="pl-sec pl-bot">' + (c.coach ? coachCardHtml(c) : '<div class="bot-card t' + tierOf(elo) + (st >= 3 ? ' won' : '') + '"><span class="bot-av">' + BOT_ART.svg(b[0], true) + '</span><div><b>' + esc(b[1]) + '</b><span class="bot-elo"><em id="plElo">' + elo + '</em> Elo</span>' + starsHtml(st, 'md') + '</div></div>' +
       '<p class="pl-msg' + (st >= 3 ? ' won' : '') + '">' + msg + '</p>' +
       '<p class="pl-desc">' + esc(b[3]) + '</p>' +
       '<ul class="pl-facts"><li><b>' + (cf.book >= 99 ? 'Sve' : cf.book) + '</b><span>' + (cf.book >= 99 ? 'linije iz teorije' : 'poteza iz teorije') + '</span></li><li><b>' + cf.depth + '</b><span>' + (cf.depth === 1 ? 'potez' : 'poteza') + ' unaprijed</span></li><li><b>' + ['Gotovo nikad', 'Rijetko', 'Ponekad', 'Često'][cf.err] + '</b><span>daje figure</span></li></ul>' + (elo >= 1600 && SF.failed ? '<p class="pl-sfwarn">Stockfish se nije učitao, pa ovaj bot igra slabije nego što piše. Osvježi stranicu kad imaš internet.</p>' : '') +
       '<p class="pl-op">Tvoje otvaranje: <b>' + esc(op.name) + '</b> <a href="#plOps" data-jump>promijeni</a></p>' + tcPicker(c) +
-      '<a class="btn big gold pl-go" href="#partija">Igraj ' + (side === 'w' ? 'bijelima' : 'crnima') + ' ▶</a>' + histStrip() + '</section>' +
+      '<a class="btn big gold pl-go" href="#partija">Igraj ' + (side === 'w' ? 'bijelima' : 'crnima') + ' ▶</a>' + histStrip()) + '</section>' +
       '<section class="pl-sec pl-ops" id="plOps"><h2><i>2</i>S kojim otvaranjem igraš?</h2><div class="pk-grid">' + ops.map(card).join('') + '</div></section>' +
       '</div>';
     $$('[data-op]', $('#plBody')).forEach((x) => { x.onclick = () => { c.op = x.dataset.op; persist(); renderPlay(); }; });
-    $$('[data-elo]', $('#plBody')).forEach((x) => { x.onclick = () => { c.elo = +x.dataset.elo; persist(); renderPlay(); const n = $('.bt.on', $('#plBody')); if (n) n.focus({ preventScroll: true }); if (window.innerWidth < 900) { const bc = $('.pl-bot'); if (bc) bc.scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'nearest' }); } }; });
+    const cpk = $('[data-coach]', $('#plBody')); if (cpk) cpk.onclick = () => { c.coach = true; persist(); renderPlay(); if (window.innerWidth < 900) { const bc = $('.pl-bot'); if (bc) bc.scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'nearest' }); } };
+    if (c.coach) bindCoachCard(c);
+    $$('[data-elo]', $('#plBody')).forEach((x) => { x.onclick = () => { c.elo = +x.dataset.elo; c.coach = false; persist(); renderPlay(); const n = $('.bt.on', $('#plBody')); if (n) n.focus({ preventScroll: true }); if (window.innerWidth < 900) { const bc = $('.pl-bot'); if (bc) bc.scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'nearest' }); } }; });
     bindTcPicker(c);
     const jp = $('[data-jump]', $('#plBody')); if (jp) jp.onclick = (e) => { e.preventDefault(); e.stopPropagation(); $('#plOps').scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'start' }); };
   }
@@ -8694,17 +8782,19 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   // način: 'open' = cijela partija od početka uz otvaranje, 'line' = nastavak od kraja naučene varijante
   function startGame(l, mode) {
     tok++;
-    const c = playCfg(), op = mode === 'open' ? OPS[c.op] : l.op, side = sideOf(op);
+    const c = playCfg(), op = mode === 'open' ? OPS[c.op] : l.op, coach = mode === 'open' && !!c.coach;
+    const side = coach ? (c.coachSide === 'b' ? 'b' : c.coachSide === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : 'w') : sideOf(op);
     const pos = mode === 'open' ? parseFen(START_FEN) : l.pos[l.n];
     G = { kind: 'game', mode: mode || 'line', op, line: l, pos, side, played: [], sans: mode === 'open' ? [] : l.sans.slice(0, l.n).map((x) => x), start: mode === 'open' ? 0 : l.n,
-      done: false, waiting: false, status: null, result: null, hintMove: null, tk: tok, keys: [posKey(pos)], half: 0, inBook: mode === 'open', botBook: 0, exit: null, stack: [], helped: false, earned: 0, newStars: 0, clk: clockNew(c.tc) };
-    if (c.elo >= 1600) sfInit();
+      done: false, waiting: false, status: null, result: null, hintMove: null, tk: tok, keys: [posKey(pos)], half: 0, inBook: mode === 'open', botBook: 0, exit: null, stack: [], helped: false, earned: 0, newStars: 0, clk: clockNew(c.tc), elo: coach ? (c.coachElo || 1000) : c.elo, coach, cm: null, cTally: {} };
+    if (coach) G.inBook = false;
+    if (G.elo >= 1600) sfInit();
     Board.mount($('#gmBoard'));
     Board.set({ pos: G.pos, flipped: side === 'b', last: mode === 'open' ? null : l.mv[l.n - 1] || null, sel: null, targets: [], marks: {}, good: -1, bad: -1, arrows: [], live: false, onMove: onGameMove });
-    const b = botOf(c.elo);
+    const b = oppNow();
     if (mode === 'open') { $('#gmBack').setAttribute('href', '#igraj'); $('#gmBack').innerHTML = '&larr; Postavke'; }
     else { const isRoot = l.id === op.stem; $('#gmBack').setAttribute('href', isRoot ? '#' + op.id : '#' + op.id + '/p-' + l.sys.id); $('#gmBack').innerHTML = '&larr; Mapa'; }
-    $('#gmTitle').innerHTML = '<span class="tking">' + PIECE_SVG[op.king] + '</span><span><b>' + (mode === 'open' ? esc(op.name) : 'Igraj: ' + esc(l.id === op.stem ? l.sys.name : lessonLabel(l.sys, l))) + '</b><small>protiv: ' + esc(b[1]) + ' (' + c.elo + ' Elo)' + (G.clk ? ' · ' + tcLabel(c.tc) : '') + '</small></span>';
+    $('#gmTitle').innerHTML = '<span class="tking">' + PIECE_SVG[op.king] + '</span><span><b>' + (coach ? 'Partija s trenerom' : mode === 'open' ? esc(op.name) : 'Igraj: ' + esc(l.id === op.stem ? l.sys.name : lessonLabel(l.sys, l))) + '</b><small>protiv: ' + esc(b[1]) + ' (' + G.elo + ' Elo)' + (G.clk ? ' · ' + tcLabel(c.tc) : '') + '</small></span>';
     renderGameMoves();
     gameStep();
   }
@@ -8733,7 +8823,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
       return;
     }
     G.waiting = false;
-    G.status = { kind: 'opp', text: esc(botOf(playCfg().elo)[1]) + ' razmišlja…' };
+    G.status = { kind: 'opp', text: esc(oppNow()[1]) + ' razmišlja…' };
     paint();
     // bot "razmišlja" kao čovjek: kraće u teoriji, dulje u složenim pozicijama
     const t0 = Date.now(), book = !!(bookNow() || []).length, nL = lm.length;
@@ -8746,8 +8836,9 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
       if (!mv || t !== tok || !G || G.kind !== 'game' || G.done) return;
       setTimeout(() => {
         if (t !== tok || !G || G.kind !== 'game' || G.done) return;
-        const before = G.pos;
+        const before = G.pos, bsan = sanOf(before, mv, legalMoves(before));
         gamePush(mv, 'bot');
+        coachOwn(before, mv, bsan);
         Board.set({ pos: G.pos, last: mv, good: -1, arrows: [] });
         Board.animate(mv.from, mv.to);
         moveSound(before, mv, true);
@@ -8761,7 +8852,8 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   }
   function botMove() {
     if (G.mode === 'eg') return SRCH.search(G.pos, { depth: 5, time: 450 }).move;
-    const elo = playCfg().elo, cf = botCfg(elo), lm = legalMoves(G.pos), bk = bookNow();
+    const elo = gameElo(), cf = botCfg(elo), lm = legalMoves(G.pos), bk = bookNow();
+    const cbk = coachBook(); if (cbk) return cbk;
     let time = cf.time;
     if (G.clk) time = Math.max(60, Math.min(time, botBudget() * 0.6));
     const bySan = (san) => lm.find((m) => sanOf(G.pos, m, lm) === san);
@@ -8800,9 +8892,10 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   }
   function onGameMove(mv, dragged) {
     if (!G || G.kind !== 'game' || !G.waiting || G.done) return false;
-    const before = G.pos;
+    const before = G.pos, ply = G.sans.length, usan = sanOf(before, mv, legalMoves(before));
     gamePush(mv, 'you');
     G.waiting = false;
+    if (G.coach) { const tk = G.tk; setTimeout(() => { if (G && G.tk === tk && G.coach) coachJudge(before, mv, usan, ply); }, 30); }
     Board.set({ pos: G.pos, last: mv, sel: null, targets: [], marks: {}, arrows: [], live: false });
     Board.animate(mv.from, mv.to, dragged);
     moveSound(before, mv, !dragged);
@@ -8814,11 +8907,11 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     G.done = true; G.waiting = false; G.result = res;
     if (G.clk && G.clk.run) { G.clk[G.clk.run] = Math.max(0, clkLeft(G.clk, G.clk.run)); G.clk.run = null; }
     save.games = save.games || { w: 0, d: 0, l: 0 };
-    const k = res === 'win' || res === 'timeout-w' ? 'w' : res === 'loss' || res === 'resign' || res === 'timeout-l' ? 'l' : 'd', elo = playCfg().elo;
+    const k = res === 'win' || res === 'timeout-w' ? 'w' : res === 'loss' || res === 'resign' || res === 'timeout-l' ? 'l' : 'd', elo = gameElo();
     save.games[k]++;
     let xp = 0;
-    if (k === 'w') { save.botBest = Math.max(save.botBest || 0, elo); xp += 25; celebrate(true); } else if (k === 'd') xp += 8;
-    const earned = k === 'w' ? (G.helped ? 2 : 3) : k === 'd' ? 1 : 0, prev = starsOf(elo);
+    if (k === 'w') { if (!G.coach) save.botBest = Math.max(save.botBest || 0, elo); xp += 25; celebrate(true); } else if (k === 'd') xp += 8;
+    const earned = G.coach ? 0 : k === 'w' ? (G.helped ? 2 : 3) : k === 'd' ? 1 : 0, prev = G.coach ? 0 : starsOf(elo);
     G.earned = earned; G.newStars = Math.max(0, earned - prev);
     if (earned > prev) { save.bots = save.bots || {}; save.bots[elo] = earned; xp += (earned - prev) * (10 + Math.round(elo / 100)); }
     if (xp) gainXP(xp);
@@ -8827,7 +8920,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     logDay('gm'); if (k === 'w') logDay('w');
     bumpDay(); persist();
     setTimeout(bgKick, 6000);
-    G.status = { kind: k === 'w' ? 'good' : k === 'l' ? 'bad' : 'opp', text: { win: 'Mat! Pobijedio si.', loss: 'Mat. ' + esc(botOf(elo)[1]) + ' je pobijedio.', resign: 'Predao si partiju.', 'draw-pat': 'Pat: remi.', 'draw-mat': 'Remi: premalo materijala za mat.', 'draw-rep': 'Remi: pozicija se ponovila tri puta.', 'draw-50': 'Remi: pravilo 50 poteza.', 'timeout-w': esc(botOf(elo)[1]) + ' je ostao bez vremena. Pobijedio si!', 'timeout-l': 'Isteklo ti je vrijeme.', 'draw-time': 'Remi: vrijeme je isteklo, ali protivnik nema čime matirati.' }[res] };
+    G.status = { kind: k === 'w' ? 'good' : k === 'l' ? 'bad' : 'opp', text: { win: 'Mat! Pobijedio si.', loss: 'Mat. ' + esc(oppNow()[1]) + ' je pobijedio.', resign: 'Predao si partiju.', 'draw-pat': 'Pat: remi.', 'draw-mat': 'Remi: premalo materijala za mat.', 'draw-rep': 'Remi: pozicija se ponovila tri puta.', 'draw-50': 'Remi: pravilo 50 poteza.', 'timeout-w': esc(oppNow()[1]) + ' je ostao bez vremena. Pobijedio si!', 'timeout-l': 'Isteklo ti je vrijeme.', 'draw-time': 'Remi: vrijeme je isteklo, ali protivnik nema čime matirati.' }[res] };
     paint();
     const neu = checkAch(true) || [];
     if (neu.length) setTimeout(pageConfetti, 400);
@@ -8838,11 +8931,11 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     const box = $('#gmBoard .bd-box');
     if (!box) return;
     const old = box.querySelector('.bd-res'); if (old) old.remove();
-    const b = botOf(elo), el = document.createElement('div');
+    const b = oppNow(), el = document.createElement('div');
     el.className = 'bd-res ' + (k === 'w' ? 'win' : k === 'd' ? 'draw' : 'loss');
     const title = k === 'w' ? 'Pobjeda!' : k === 'd' ? 'Remi' : G.result === 'resign' ? 'Predaja' : G.result === 'timeout-l' ? 'Isteklo vrijeme' : 'Poraz';
-    const sub = k === 'w' ? (earned >= 3 ? 'Tri zvjezdice' : 'Dvije zvjezdice') + ' protiv: ' + b[1] : k === 'd' ? 'Jedna zvjezdica za remi' : b[1] + ' je ovaj put bolji. Probaj ponovno!';
-    el.innerHTML = '<div class="br-card">' + (k === 'l' ? '<span class="br-ic">' + BOT_ART.svg(b[0], true) + '</span>' : starsHtml(earned, 'big spop')) +
+    const sub = G.coach ? (k === 'w' ? 'Pobijedio si trenera!' : k === 'd' ? 'Remi s trenerom' : 'Trener je ovaj put bolji. Pogledaj analizu!') : k === 'w' ? (earned >= 3 ? 'Tri zvjezdice' : 'Dvije zvjezdice') + ' protiv: ' + b[1] : k === 'd' ? 'Jedna zvjezdica za remi' : b[1] + ' je ovaj put bolji. Probaj ponovno!';
+    el.innerHTML = '<div class="br-card">' + (k === 'l' || G.coach ? '<span class="br-ic">' + BOT_ART.svg(b[0], true) + '</span>' : starsHtml(earned, 'big spop')) +
       '<b class="br-t">' + title + '</b><span class="br-s">' + esc(sub) + '</span>' + (xp ? '<span class="br-xp">+' + xp + ' XP</span>' : '') +
       (neu.length ? '<div class="br-ach"><small>Novo postignuće</small>' + neu.map((a) => '<span><i>' + PIECE_SVG[a[3]] + '</i>' + esc(a[1]) + '</span>').join('') + '</div>' : '') +
       '<small class="br-tap">Dodirni za nastavak</small></div>';
@@ -8861,8 +8954,14 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   }
   function gamePanelHtml() {
     if (G.mode === 'eg') return egPanelHtml();
-    const s = G.status || { kind: '', text: '' }, b = botOf(playCfg().elo);
+    const s = G.status || { kind: '', text: '' }, b = oppNow();
     let kick, body, act, cls = 'plan';
+    if (G.coach) {
+      const anB = G.histId ? '<a class="btn pri" href="#analiza/' + G.histId + '">Analiza</a>' : '';
+      act = G.done ? '<button class="btn' + (anB ? '' : ' pri') + ' pulse" data-g="again">Nova partija</button>' + anB + '<a class="btn" href="#igraj">Postavke</a>'
+        : '<button class="btn" data-g="hint"' + (G.waiting ? '' : ' disabled') + '>Savjet</button><button class="btn" data-g="undo"' + (G.waiting && G.stack.length ? '' : ' disabled') + '>Vrati</button><button class="btn" data-g="resign">Predaj</button>';
+      return '<div class="coach slim gm cmode">' + (G.done ? '<div class="c-body why"><span class="kicker">Kraj partije</span><div class="c-txt"><p class="res-big">' + esc(s.text.replace(/<[^>]+>/g, '')) + '</p>' + coachSummary() + '</div></div>' : '') + coachPanelHtml() + '<div class="c-act">' + act + '</div></div>';
+    }
     if (G.done) {
       kick = 'Kraj partije'; cls = s.kind === 'good' ? 'why' : 'plan'; const g = save.games || { w: 0, d: 0, l: 0 };
       const elo = playCfg().elo, have = starsOf(elo), nb = nextBot(elo);
@@ -8905,17 +9004,17 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   function renderStrips() {
     if (G.mode === 'eg') { egStrips(); return; }
     const mi = matInfo(G.pos), botCol = G.side === 'w' ? 'b' : 'w';
-    const c = playCfg(), b = botOf(c.elo), botTurn = !G.done && G.pos.turn !== G.side, myTurn = !G.done && G.pos.turn === G.side, chk = inCheck(G.pos);
+    const c = playCfg(), b = oppNow(), gE = gameElo(), botTurn = !G.done && G.pos.turn !== G.side, myTurn = !G.done && G.pos.turn === G.side, chk = inCheck(G.pos);
     const top = $('#gmTopS'), me = $('#gmMeS');
-    if (top) top.innerHTML = '<span class="ps-av bot t' + tierOf(c.elo) + '">' + BOT_ART.svg(b[0], true) + '</span><span class="ps-n"><b>' + esc(b[1]) + starsHtml(starsOf(c.elo), 'xs') + '</b><small>' + (botTurn ? '<span class="think">razmišlja<i>.</i><i>.</i><i>.</i></span>' : G.done ? '\u00A0' : 'čeka tvoj potez') + '</small></span>' +
-      matHtml(mi, botCol) + (G.clk ? clkHtml(botCol, 'clkBot') : '') + '<label class="elo-sel' + (G.clk ? ' with-clk' : '') + '"><span class="vh">Jačina bota</span><select id="gmElo">' + BOTS.map((x) => '<option value="' + x[0] + '"' + (x[0] === c.elo ? ' selected' : '') + '>' + x[0] + ' \u00B7 ' + esc(x[1]) + (starsOf(x[0]) ? ' ' + '\u2605'.repeat(starsOf(x[0])) : '') + '</option>').join('') + '</select></label>';
+    if (top) top.innerHTML = '<span class="ps-av bot t' + tierOf(gE) + (G.coach ? ' coach' : '') + '">' + BOT_ART.svg(b[0], true) + '</span><span class="ps-n"><b>' + esc(b[1]) + (G.coach ? ' <i class="ps-cel">' + gE + '</i>' : starsHtml(starsOf(gE), 'xs')) + '</b><small>' + (botTurn ? '<span class="think">razmišlja<i>.</i><i>.</i><i>.</i></span>' : G.done ? '\u00A0' : 'čeka tvoj potez') + '</small></span>' +
+      matHtml(mi, botCol) + (G.clk ? clkHtml(botCol, 'clkBot') : '') + (G.coach ? '' : '<label class="elo-sel' + (G.clk ? ' with-clk' : '') + '"><span class="vh">Jačina bota</span><select id="gmElo">' + BOTS.map((x) => '<option value="' + x[0] + '"' + (x[0] === c.elo ? ' selected' : '') + '>' + x[0] + ' \u00B7 ' + esc(x[1]) + (starsOf(x[0]) ? ' ' + '\u2605'.repeat(starsOf(x[0])) : '') + '</option>').join('') + '</select></label>');
     if (top) top.classList.toggle('turn', botTurn);
     const th = G.mode === 'open' ? (G.inBook ? '<span class="ps-tag ok">u teoriji</span>' : '<span class="ps-tag">izvan teorije</span>') : '';
     if (me) me.innerHTML = '<span class="ps-av me">' + esc((PROF.cur || 'Ti').charAt(0).toUpperCase()) + '</span><span class="ps-n"><b>' + esc(PROF.cur || 'Ti') + '</b><small class="ps-st' + (myTurn && chk ? ' chk' : '') + '">' + (G.done ? esc(G.status.text.replace(/<[^>]+>/g, '')) : myTurn ? (chk ? 'Šah! Tvoj potez' : 'Tvoj potez') : 'bot je na potezu') + '</small></span>' + matHtml(mi, G.side) + th + (G.clk ? clkHtml(G.side, 'clkMe') : '');
     if (me) me.classList.toggle('turn', myTurn);
     if (me) me.classList.toggle('res-' + (G.status && G.status.kind), !!G.done);
     const sel = $('#gmElo');
-    if (sel) sel.onchange = () => { playCfg().elo = +sel.value; persist(); const bb = botOf(+sel.value); const sm = $('#gmTitle small'); if (sm) sm.textContent = 'protiv: ' + bb[1] + ' (' + sel.value + ' Elo)' + (G.clk ? ' · ' + tcLabel(G.clk.tc) : ''); renderStrips(); };
+    if (sel) sel.onchange = () => { playCfg().elo = +sel.value; G.elo = +sel.value; persist(); const bb = botOf(+sel.value); const sm = $('#gmTitle small'); if (sm) sm.textContent = 'protiv: ' + bb[1] + ' (' + sel.value + ' Elo)' + (G.clk ? ' · ' + tcLabel(G.clk.tc) : ''); renderStrips(); };
   }
   function renderGamePanel() {
     const c = $('#gmCoach');
@@ -9773,7 +9872,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   // ---- spremanje partija
   function histAdd(res, k) {
     if (!G || G.kind !== 'game' || G.mode === 'eg' || G.sans.length - G.start < 2) return null;
-    const h = { id: Date.now().toString(36), t: Date.now(), op: G.op.id, side: G.side, elo: playCfg().elo, res: k, why: res, start: G.start, sans: G.sans.slice(), line: G.line ? G.line.id : null, tc: G.clk ? G.clk.tc : null, an: null };
+    const h = { id: Date.now().toString(36), t: Date.now(), op: G.op.id, side: G.side, elo: gameElo(), coach: G.coach ? 1 : 0, opName: G.coach ? openingAt(G.sans) : null, res: k, why: res, start: G.start, sans: G.sans.slice(), line: G.line ? G.line.id : null, tc: G.clk ? G.clk.tc : null, an: null };
     save.hist = (save.hist || []).concat(h).slice(-10);
     G.histId = h.id;
     return h;
@@ -9997,7 +10096,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   }
   function puzObj(h, P, j, pos, bm, sans) {
     const cap = !!pos.b[bm.to] || bm.flag === 'ep', chk = /\+|#/.test(sans[0]);
-    const bot = botOf(h.elo)[1];
+    const bot = oppH(h)[1];
     return {
       id: 'M' + h.id + '-' + j, src: h.id, ply: j, fen: toFen(pos), solution: [sans[0]], accept: { 0: sans.slice(1) },
       goal: 'Pronađi bolji potez',
@@ -10048,9 +10147,9 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     AN.h = h; AN.P = gamePos(h); AN.cl = [];
     AN.ply = Math.min(AN.ply && AN.lastId === h.id ? AN.ply : 0, AN.P.pos.length - 1); AN.lastId = h.id;
     AN.tab = AN.tab || 'mv';
-    const op = OPS[h.op] || OPENINGS[0], b = botOf(h.elo);
+    const op = OPS[h.op] || OPENINGS[0], b = oppH(h);
     $('#anBack').setAttribute('href', '#analiza'); $('#anBack').innerHTML = '&larr; Moje partije';
-    $('#anTitle').innerHTML = '<span class="tking">' + PIECE_SVG[op.king] + '</span><span><b>Analiza partije</b><small>' + esc(op.name) + ' · protiv: ' + esc(b[1]) + ' (' + h.elo + ')' + (h.tc ? ' · ' + tcLabel(h.tc) : '') + ' · ' + resWord(h) + ' ' + resScore(h) + '</small></span>';
+    $('#anTitle').innerHTML = '<span class="tking">' + PIECE_SVG[op.king] + '</span><span><b>Analiza partije</b><small>' + esc(h.coach ? (h.opName || 'Partija s trenerom') : op.name) + ' · protiv: ' + esc(b[1]) + ' (' + h.elo + ')' + (h.tc ? ' · ' + tcLabel(h.tc) : '') + ' · ' + resWord(h) + ' ' + resScore(h) + '</small></span>';
     const nb = (a) => '<button class="an-nb" data-an="' + a + '" aria-label="' + NAV_L[a] + '" title="' + NAV_L[a] + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + NAV_IC[a] + '</svg></button>';
     $('#anBody').innerHTML = '<div class="an">' +
       '<div class="an-l"><div class="an-top" id="anTop"><span class="an-opp"><span class="ps-av bot t' + tierOf(h.elo) + '">' + BOT_ART.svg(b[0], true) + '</span><b>' + esc(b[1]) + '</b><small>' + h.elo + '</small></span><span class="an-vpill" aria-hidden="true">' + IC_HAND + 'Tvoja varijanta</span></div>' +
@@ -10282,7 +10381,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   // komentar za potez u tvojoj varijanti
   function varCoach(v) {
     const h = AN.h, P = AN.P, A = h.an || { e: [], b: [] }, i = v.i, n = v.nodes[i], ply = v.base + i, lab = plyLabel(ply, n.san);
-    const me = n.parent.turn === h.side, bot = botOf(h.elo)[1], pe = i ? v.nodes[i - 1] : v.root;
+    const me = n.parent.turn === h.side, bot = oppH(h)[1], pe = i ? v.nodes[i - 1] : v.root;
     const acts = [];
     if (n.c == null) {
       return '<div class="an-cm-h"><span class="an-i big wait"><span class="an-spin"></span></span><b><span class="mono">' + esc(lab) + '</span></b><em class="an-evc">…</em></div><p class="muted">Računam koliko je dobar ovaj potez…</p>';
@@ -10388,7 +10487,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
       key = 'r' + p;
     } else {
       key = 'm' + p + '-' + (c ? c.c : '');
-      const me = P.pos[Math.max(0, p - 1)].turn === h.side, bot = botOf(h.elo)[1];
+      const me = P.pos[Math.max(0, p - 1)].turn === h.side, bot = oppH(h)[1];
       const keyBtn = '<button class="btn flat" data-va="key">Ključni trenutak ›</button>';
       if (p === 0) cm = '<div class="an-cm-h"><span class="an-i big start">' + PIECE_SVG.wK + '</span><b>Početna pozicija</b><em class="an-evc">' + fmtEv(e) + '</em></div><p class="muted">Idi kroz partiju strelicama ispod ploče ili klikni bilo koji trenutak na grafu. Pomakni figuru i isprobaj svoje poteze.</p><div class="an-acts">' + keyBtn + '</div>';
       else if (!c) cm = '<div class="an-cm-h"><span class="an-i big wait"><span class="an-spin"></span></span><b class="mono">' + esc(plyLabel(p - 1, P.sans[p - 1])) + '</b><em class="an-evc">…</em></div><p class="muted">Ovaj potez još analiziram.</p>';
@@ -10522,7 +10621,7 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
   function anAcc() {
     const el = $('#anAcc'), sm = $('#anSum'), h = AN.h, P = AN.P, cl = AN.cl, done = h.an && h.an.done;
     if (!el) return;
-    const b = botOf(h.elo), aMe = accSide(cl, P, h.side, h), aBot = accSide(cl, P, h.side === 'w' ? 'b' : 'w', h);
+    const b = oppH(h), aMe = accSide(cl, P, h.side, h), aBot = accSide(cl, P, h.side === 'w' ? 'b' : 'w', h);
     const cnt = (side) => { const o = {}; cl.forEach((x, j) => { if (P.pos[j].turn === side && !x.auto) o[x.c] = (o[x.c] || 0) + 1; }); return o; };
     const cm = cnt(h.side), cb = cnt(h.side === 'w' ? 'b' : 'w');
     const np = done ? (save.myPuz || []).filter((x) => x.src === h.id).length : 0;
@@ -10545,8 +10644,8 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     $('#anTitle').innerHTML = '';
     const hs = (save.hist || []).slice().reverse();
     const card = (h) => {
-      const P = gamePos(h), op = OPS[h.op] || OPENINGS[0], b = botOf(h.elo), last = P.pos.length - 1;
-      return '<a class="hg" href="#analiza/' + h.id + '"><span class="hg-b">' + miniSvg(P.pos[last], h.side === 'b', P.mv[last - 1]) + '</span><span class="hg-t"><span class="hg-r r-' + h.res + '">' + resWord(h) + ' · ' + resScore(h) + '</span><b>' + esc(op.name) + '</b><small>protiv: ' + esc(b[1]) + ' (' + h.elo + ') · ' + Math.ceil(P.sans.length / 2) + ' poteza · ' + fmtDate(h.t) + '</small><span class="hg-a">' + (h.an && h.an.done && h.an.acc != null ? 'Točnost <b>' + h.an.acc.toFixed(1) + '</b>' : 'Analiziraj ▶') + '</span></span></a>';
+      const P = gamePos(h), op = OPS[h.op] || OPENINGS[0], b = oppH(h), last = P.pos.length - 1;
+      return '<a class="hg" href="#analiza/' + h.id + '"><span class="hg-b">' + miniSvg(P.pos[last], h.side === 'b', P.mv[last - 1]) + '</span><span class="hg-t"><span class="hg-r r-' + h.res + '">' + resWord(h) + ' · ' + resScore(h) + '</span><b>' + esc(h.coach ? (h.opName || 'Partija s trenerom') : op.name) + '</b><small>protiv: ' + esc(b[1]) + ' (' + h.elo + ') · ' + Math.ceil(P.sans.length / 2) + ' poteza · ' + fmtDate(h.t) + '</small><span class="hg-a">' + (h.an && h.an.done && h.an.acc != null ? 'Točnost <b>' + h.an.acc.toFixed(1) + '</b>' : 'Analiziraj ▶') + '</span></span></a>';
     };
     $('#anBody').innerHTML = '<div class="page-h"><h1>Moje partije</h1><p>Zadnjih deset partija protiv botova. Otvori partiju i pogledaj ocjenu svakog poteza, graf partije i najbolje poteze. Tvoje greške postaju zadaci za vježbu.</p></div>' +
       weakBanner() + (hs.length ? '<div class="hg-grid">' + hs.map(card).join('') + '</div>' : mascotHtml('<b>Još nema partija.</b> Odigraj partiju protiv bota i ovdje ćeš je moći analizirati.') + '<a class="btn big gold an-go" href="#igraj">Igraj protiv bota ▶</a>') +
@@ -10562,8 +10661,8 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     const hs = (save.hist || []).slice(-3).reverse();
     if (!hs.length) return '';
     return '<div class="pl-hist"><div class="pl-hh"><b>Zadnje partije</b><a href="#analiza">Sve partije ▶</a></div><div class="hg-list">' + hs.map((h) => {
-      const P = gamePos(h), op = OPS[h.op] || OPENINGS[0], b = botOf(h.elo), last = P.pos.length - 1;
-      return '<a class="hg" href="#analiza/' + h.id + '"><span class="hg-b">' + miniSvg(P.pos[last], h.side === 'b', P.mv[last - 1]) + '</span><span class="hg-t"><span class="hg-r r-' + h.res + '">' + resWord(h) + '</span><b>' + esc(op.name) + '</b><small>' + esc(b[1]) + ' (' + h.elo + ') · ' + fmtDate(h.t) + '</small><span class="hg-a">' + (h.an && h.an.done && h.an.acc != null ? 'Točnost <b>' + h.an.acc.toFixed(1) + '</b>' : 'Analiziraj ▶') + '</span></span></a>';
+      const P = gamePos(h), op = OPS[h.op] || OPENINGS[0], b = oppH(h), last = P.pos.length - 1;
+      return '<a class="hg" href="#analiza/' + h.id + '"><span class="hg-b">' + miniSvg(P.pos[last], h.side === 'b', P.mv[last - 1]) + '</span><span class="hg-t"><span class="hg-r r-' + h.res + '">' + resWord(h) + '</span><b>' + esc(h.coach ? (h.opName || 'Partija s trenerom') : op.name) + '</b><small>' + esc(b[1]) + ' (' + h.elo + ') · ' + fmtDate(h.t) + '</small><span class="hg-a">' + (h.an && h.an.done && h.an.acc != null ? 'Točnost <b>' + h.an.acc.toFixed(1) + '</b>' : 'Analiziraj ▶') + '</span></span></a>';
     }).join('') + '</div></div>';
   }
 
@@ -11586,6 +11685,132 @@ const STATS = {"source": "chessiverse.com (Lichess opening explorer, blitz+rapid
     if (CO.st !== 'run') return;
     if (i === CO.target) { CO.score++; sound('move'); const t = CO.target; coNext(); coDraw([t, 'co-ok']); }
     else { CO.miss++; sound('bad'); coDraw([i, 'co-bad']); }
+  }
+  // =========================================================
+  // Trener: igraš protiv trenera (biraš jačinu, stranu i sat), a on komentira svaki tvoj potez
+  // =========================================================
+  const COACH = ['coach', 'Trener Mihael', 'coach', 'Tvoj trener. Igra jačinom koju odabereš i nakon svakog tvog poteza kaže što misli: je li potez dobar, koje je otvaranje i što je bolje.'];
+  (function () { const old = BOT_ART.svg; BOT_ART.svg = (e, bg) => (e === 'coach' ? COACH_ART.svg(bg) : old(e, bg)); })();
+  const oppH = (h) => (h && h.coach ? COACH : botOf(h.elo));
+  const gameElo = () => (G && G.kind === 'game' && G.elo) || playCfg().elo;
+  const oppNow = () => (G && G.kind === 'game' && G.coach ? COACH : botOf(gameElo()));
+  const coachLvl = (e) => (e < 800 ? 'početnik' : e < 1200 ? 'rekreativac' : e < 1600 ? 'klupski igrač' : e < 2000 ? 'jak igrač' : 'majstor');
+  // sva otvaranja u jednoj knjizi: niz poteza -> nastavci i ime
+  let ALLBOOK = null;
+  function allBook() {
+    if (ALLBOOK) return ALLBOOK;
+    const nx = {}, nm = {};
+    for (const op of OPENINGS) for (const l of op.lines) {
+      for (let i = 0; i < l.sans.length; i++) {
+        const k = l.sans.slice(0, i).join(' ');
+        (nx[k] = nx[k] || {}); nx[k][l.sans[i]] = (nx[k][l.sans[i]] || 0) + 1;
+        const k2 = l.sans.slice(0, i + 1).join(' ');
+        if (!nm[k2]) nm[k2] = { op: op.name, line: l.name, n: 0 };
+        nm[k2].n++; if (nm[k2].op !== op.name) nm[k2].mixed = true;
+      }
+    }
+    ALLBOOK = { nx, nm };
+    return ALLBOOK;
+  }
+  // osnovna imena za prve poteze, kad nisu u našim otvaranjima
+  const BASIC_OPEN = { 'e4': 'otvaranje kraljevim pješakom', 'd4': 'otvaranje daminim pješakom', 'c4': 'Englesko otvaranje', 'Nf3': 'Réti otvaranje', 'e4 e5': 'otvoreno otvaranje (1.e4 e5)', 'e4 c5': 'Sicilijanska obrana', 'e4 e6': 'Francuska obrana', 'e4 c6': 'Caro-Kann obrana', 'e4 d5': 'Skandinavska obrana', 'e4 d6': 'Pircova obrana', 'e4 g6': 'Moderna obrana', 'e4 Nf6': 'Aljehinova obrana', 'd4 d5': 'zatvoreno otvaranje (1.d4 d5)', 'd4 Nf6': 'indijske obrane (1.d4 Nf6)', 'd4 f5': 'Nizozemska obrana', 'd4 d5 c4': 'Damin gambit', 'e4 e5 Nf3 Nc6 Bc4': 'Talijanska partija', 'e4 e5 Nf3 Nc6 Bb5': 'Španjolska partija', 'e4 e5 Nf3 Nc6 d4': 'Škotska partija', 'e4 e5 f4': 'Kraljev gambit', 'e4 e5 Nf3 Nf6': 'Petrovljeva obrana', 'e4 e5 Nf3 d6': 'Philidorova obrana' };
+  function openingAt(sans) {
+    const B = allBook();
+    for (let n = sans.length; n >= 1; n--) {
+      const k = sans.slice(0, n).join(' ');
+      const x = B.nm[k];
+      if (x && n >= 2) return x.mixed || x.n > 1 ? x.op : x.op + ', ' + x.line;
+      if (BASIC_OPEN[k]) return BASIC_OPEN[k];
+    }
+    return null;
+  }
+  // trenerov izbor iz knjige otvaranja (raznolikost), samo na početku
+  function coachBook() {
+    if (!G.coach || G.sans.length >= Math.min(12, 2 + Math.round(G.elo / 200))) return null;
+    const c = allBook().nx[G.sans.join(' ')];
+    if (!c) return null;
+    const ks = Object.keys(c), tot = ks.reduce((a, k) => a + c[k], 0);
+    let r = Math.random() * tot;
+    for (const k of ks) { r -= c[k]; if (r <= 0) { const lm = legalMoves(G.pos), m = lm.find((x) => sanOf(G.pos, x, lm) === k); if (m) return m; } }
+    return null;
+  }
+  const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
+  // ocjena tvog poteza i komentar
+  function coachJudge(before, mv, san, ply) {
+    if (!G || !G.coach) return;
+    const sansBefore = G.sans.slice(0, ply), lm = legalMoves(before), after = apply(before, mv);
+    const B = allBook(), inBook = !!(B.nx[sansBefore.join(' ')] && B.nx[sansBefore.join(' ')][san]);
+    const opName = openingAt(sansBefore.concat(san));
+    const newOp = opName && opName !== G.cOp ? opName : null;
+    if (newOp) G.cOp = opName;
+    let cls, txt = '', best = null;
+    if (inBook && ply < 16) {
+      cls = 'book';
+      txt = pickOne(['Teorija, točno tako.', 'To se igra! Potez iz teorije.', 'Dobro poznaješ otvaranje.']);
+    } else {
+      const r = SRCH.search(before, { depth: 30, time: 260, minDepth: 4, maxTime: 1200 });
+      best = r.move ? sanOf(before, r.move, lm) : null;
+      const isBest = !!best && strip(best) === strip(san);
+      const ev = isBest ? { score: r.score, reply: null } : SRCH.evalMove(before, mv, r.depth, 1800);
+      const reply = !isBest ? ev.reply : SRCH.search(after, { depth: 3, time: 120 }).move;
+      const replySan = reply ? sanOf(after, reply, legalMoves(after)) : null;
+      const wb = winP(eCp(r.score)), wa = winP(eCp(ev.score)), loss = isBest ? 0 : Math.max(0, wb - wa);
+      cls = isBest || loss < 0.6 ? 'best' : loss < 2.5 ? 'exc' : loss < 5 ? 'good' : loss < 10 ? 'inac' : loss < 20 ? 'mist' : 'blun';
+      const mt = mateFix(cls, isBest, r.score, ev.score, wb);
+      cls = mt.c;
+      const B2 = '<b class="mono">' + esc(best || '') + '</b>';
+      const why = whyTxt(before, mv, after, best, replySan, true, '').map((x) => x.replace(' (crvena strelica)', ''));
+      if (mt.mm) txt = 'Ajme, imao si <b>mat u ' + mt.mm + '</b>: ' + B2 + '!';
+      else if (cls === 'best') txt = /#$/.test(san) ? 'Mat! Svaka čast.' : pickOne(['Odličan potez!', 'Bravo, i ja bih to odigrao.', 'Točno tako!', 'Super potez.', 'Najbolji potez, samo nastavi.']);
+      else if (cls === 'exc') txt = pickOne(['Vrlo dobro.', 'Dobar potez, samo naprijed.', 'Lijepo.']);
+      else if (cls === 'good') txt = pickOne(['Dobar potez.', 'U redu potez.', 'Može.']) + (best ? ' Malo bolje je ' + B2 + '.' : '');
+      else if (cls === 'inac') txt = 'Hmm, ima i bolje. ' + (why[0] ? why[0] + ' ' : '') + 'Ja bih igrao ' + B2 + '.';
+      else if (cls === 'mist') txt = 'Ajme, to je greška. ' + (why[0] ? why[0] + ' ' : '') + 'Bolje je bilo ' + B2 + '.';
+      else txt = 'Joj, gruba greška! ' + (why[0] ? why[0] + ' ' : mt.ma ? 'Sad ti mogu dati mat u ' + mt.ma + '. ' : '') + 'Trebalo je ' + B2 + '.';
+      if (mt.ma && cls !== 'blun') txt += ' Pazi, sad ti mogu dati mat!';
+    }
+    if (newOp) txt += ' <span class="cm-op">Otvaranje: ' + esc(newOp) + '</span>';
+    G.cTally = G.cTally || {}; G.cTally[cls] = (G.cTally[cls] || 0) + 1;
+    G.cm = { cls, txt, san: plyLabel(ply, san), ply };
+    if (view === 'game' && G.kind === 'game') renderGamePanel();
+  }
+  // komentar nakon trenerova poteza (kratko, samo kad ima smisla)
+  function coachOwn(before, mv, san) {
+    if (!G || !G.coach || !G.cm) return;
+    const cap = before.b[mv.to];
+    if (G.cm.cls === 'blun' || G.cm.cls === 'mist') { if (cap && 'nbrqNBRQ'.indexOf(cap) >= 0) G.cm.own = pickOne(['Hvala na figuri!', 'Ovo ću uzeti, hvala.', 'Njam, figura!']); }
+    else if (/#$/.test(san)) G.cm.own = 'Mat! Dobra partija, idemo opet?';
+    else if (/\+$/.test(san) && Math.random() < 0.5) G.cm.own = 'Šah!';
+  }
+  function coachPanelHtml() {
+    const cm = G.cm, av = '<span class="cb-av">' + COACH_ART.svg(true) + '</span>';
+    let body;
+    if (!cm) body = '<p>Bok! Ja sam tvoj trener. Igraj, a ja ću ti nakon svakog tvog poteza reći što mislim.' + (G.side === 'b' ? ' Ja počinjem.' : ' Ti počinješ.') + '</p>';
+    else body = '<p class="cb-h">' + anIcon(cm.cls, 'sm') + '<b class="mono">' + esc(cm.san) + '</b><span>' + AN_CL[cm.cls][0] + '</span></p><p>' + cm.txt + '</p>' + (cm.own ? '<p class="cb-own">' + esc(cm.own) + '</p>' : '');
+    return '<div class="cb' + (cm ? ' c-' + cm.cls : '') + '">' + av + '<div class="cb-bub"><span class="cb-n">' + esc(COACH[1]) + '</span>' + body + '</div></div>';
+  }
+  function coachSummary() {
+    const t = G.cTally || {}, n = Object.keys(t).reduce((a, k) => a + t[k], 0);
+    if (!n) return '';
+    const good = (t.best || 0) + (t.exc || 0) + (t.book || 0) + (t.good || 0), bad = (t.mist || 0) + (t.blun || 0) + (t.miss || 0);
+    return '<p class="cb-sum">Dobri potezi: <b>' + good + '</b> · Netočnosti: <b>' + (t.inac || 0) + '</b> · Greške: <b>' + bad + '</b>. ' + (bad === 0 ? 'Odlično odigrano!' : 'U analizi pogledaj gdje si pogriješio.') + '</p>';
+  }
+  // izbor trenera na stranici Igraj
+  function coachPickHtml(c) {
+    return '<button class="coach-pick' + (c.coach ? ' on' : '') + '" data-coach="1" aria-pressed="' + !!c.coach + '"><span class="cp-av">' + COACH_ART.svg(true) + '</span><span class="cp-t"><small>Novo</small><b>' + esc(COACH[1]) + '</b><span>Igraj protiv mene. Ja komentiram svaki tvoj potez.</span></span></button>';
+  }
+  function coachCardHtml(c) {
+    const e = c.coachElo || 1000, sd = c.coachSide || 'w';
+    return '<div class="bot-card coach-card' + '"><span class="bot-av">' + COACH_ART.svg(true) + '</span><div><b>' + esc(COACH[1]) + '</b><span class="bot-elo"><em id="plElo">' + e + '</em> Elo · ' + coachLvl(e) + '</span></div></div>' +
+      '<p class="pl-desc">' + esc(COACH[3]) + '</p>' +
+      '<div class="cc-row"><label for="ccElo">Jačina</label><input type="range" id="ccElo" min="400" max="2400" step="100" value="' + e + '"><output id="ccEloO">' + e + '</output></div>' +
+      '<div class="cc-row"><span class="cc-l">Igraš</span><div class="seg2" role="group" aria-label="Boja figura">' + [['w', 'Bijelima'], ['b', 'Crnima'], ['r', 'Nasumično']].map((x) => '<button data-csd="' + x[0] + '" aria-pressed="' + (sd === x[0]) + '">' + x[1] + '</button>').join('') + '</div></div>' +
+      tcPicker(c) + '<a class="btn big gold pl-go" href="#partija">Igraj s trenerom ▶</a>' + histStrip();
+  }
+  function bindCoachCard(c) {
+    const r = $('#ccElo'), o = $('#ccEloO');
+    if (r) { r.oninput = () => { o.textContent = r.value; const pe = $('#plElo'); if (pe) pe.textContent = r.value; const lv = $('.coach-card .bot-elo'); if (lv) lv.innerHTML = '<em id="plElo">' + r.value + '</em> Elo · ' + coachLvl(+r.value); }; r.onchange = () => { c.coachElo = +r.value; persist(); }; }
+    $$('[data-csd]', $('#plBody')).forEach((b) => { b.onclick = () => { c.coachSide = b.dataset.csd; persist(); renderPlay(); }; });
   }
 
   // =========================================================
